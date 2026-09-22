@@ -3,6 +3,8 @@
 El signo de un numero se reconoce como operador independiente. Los comentarios y
 el espacio se descartan, pero actualizan linea y columna. La politica general es
 maxima coincidencia; si dos reglas empatan, se usa la prioridad de este modulo.
+Los identificadores, digitos y espacios se restringen a las clases ASCII
+documentadas. LF, CRLF y CR cuentan como un salto; cada tabulacion, una columna.
 """
 
 from __future__ import annotations
@@ -71,7 +73,11 @@ class Lexer:
         re.ASCII,
     )
     INTEGER = re.compile(r"[0-9]+", re.ASCII)
-    INVALID_NUMBER_TAIL = re.compile(r"[A-Za-z0-9_.]*", re.ASCII)
+    DIGITS = "0123456789"
+    IDENTIFIER_CHARS = frozenset(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
+    )
+    WHITESPACE = " \t\r\n\f\v"
 
     WORD_OPERATORS = {
         "is": "OPERADOR_ARITMETICO",
@@ -126,10 +132,10 @@ class Lexer:
 
         def advance(text: str) -> None:
             nonlocal line, column
-            breaks = text.count("\n")
+            breaks = text.count("\n") + text.count("\r") - text.count("\r\n")
             if breaks:
                 line += breaks
-                column = len(text.rsplit("\n", 1)[-1]) + 1
+                column = len(text) - max(text.rfind("\n"), text.rfind("\r"))
             else:
                 column += len(text)
 
@@ -140,16 +146,19 @@ class Lexer:
         while i < n:
             ch = source[i]
 
-            if ch.isspace():
-                advance(ch)
-                i += 1
+            if ch in self.WHITESPACE:
+                # Consumir CRLF junto evita contar el mismo salto dos veces.
+                end = i + 2 if source.startswith("\r\n", i) else i + 1
+                advance(source[i:end])
+                i = end
                 continue
 
             start_line, start_col = line, column
 
             if ch == "%":
-                end = source.find("\n", i)
-                end = n if end == -1 else end
+                end = i + 1
+                while end < n and source[end] not in "\r\n":
+                    end += 1
                 advance(source[i:end])
                 i = end
                 continue
@@ -176,10 +185,13 @@ class Lexer:
                 closed = False
                 while j < n:
                     current = source[j]
-                    if current == "\n":
+                    if current in "\r\n":
                         break
                     if current == "\\":
-                        if j + 1 >= n or source[j + 1] == "\n":
+                        if j + 1 >= n or source[j + 1] in "\r\n":
+                            # La barra pertenece al literal incompleto, no a un
+                            # segundo error independiente en la iteracion siguiente.
+                            j += 1
                             break
                         if source[j + 1] not in self.VALID_ESCAPES and invalid_escape is None:
                             invalid_escape = source[j : j + 2]
@@ -212,7 +224,7 @@ class Lexer:
                 i = j
                 continue
 
-            if ch.isdigit() and ch.isascii():
+            if ch in self.DIGITS:
                 real_match = self.REAL.match(source, i)
                 int_match = self.INTEGER.match(source, i)
                 match = real_match or int_match
@@ -220,21 +232,24 @@ class Lexer:
                 end = match.end()
 
                 malformed = False
-                if end < n and (source[end].isalpha() or source[end] == "_"):
+                if end < n and source[end] in self.IDENTIFIER_CHARS:
                     malformed = True
-                if end + 1 < n and source[end] == "." and source[end + 1].isdigit():
+                if end + 1 < n and source[end] == "." and source[end + 1] in self.DIGITS:
                     malformed = True
 
                 if malformed:
-                    tail = self.INVALID_NUMBER_TAIL.match(source, end)
-                    assert tail is not None
-                    end = tail.end()
-                    # Un signo solo pertenece al fragmento erroneo cuando sigue
-                    # inmediatamente a un marcador de exponente incompleto.
-                    if end < n and source[end] in "+-" and end > i and source[end - 1] in "eE":
-                        end += 1
-                        while end < n and (source[end].isalnum() or source[end] in "_."):
+                    while end < n:
+                        current = source[end]
+                        if current in self.IDENTIFIER_CHARS:
                             end += 1
+                        elif current == "." and end + 1 < n and source[end + 1] in self.DIGITS:
+                            # Mantener el punto de clausula como limite de recuperacion.
+                            end += 1
+                        elif current in "+-" and source[end - 1] in "eE":
+                            # Solo un marcador de exponente admite un signo propio.
+                            end += 1
+                        else:
+                            break
                     fragment = source[i:end]
                     errors.append(
                         LexError("Numero mal formado", fragment, start_line, start_col)
