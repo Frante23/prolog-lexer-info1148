@@ -2,3 +2,14 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 salida*.json
+
+# Archivos temporales del informe; main.pdf se conserva como entrega.
+informe/build/
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.xdv

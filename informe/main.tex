@@ -1,13 +1,26 @@
 \documentclass[11pt,letterpaper]{article}
 
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{lmodern}
+\else
+  \usepackage{fontspec}
+  \setmainfont{Latin Modern Roman}
+  \setsansfont{Latin Modern Sans}
+  \setmonofont{Latin Modern Mono}[Scale=MatchLowercase]
+\fi
 \usepackage[provide=*,spanish]{babel}
-\usepackage{fontspec}
-\setmainfont{Latin Modern Roman}
-\setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}[Scale=0.85]
 
 \usepackage[letterpaper,top=1.75cm,bottom=1.75cm,left=1.85cm,right=1.85cm]{geometry}
 \usepackage{graphicx}
+% Permite compilar desde informe/ o desde la raíz del repositorio.
+\makeatletter
+\providecommand*{\input@path}{}
+\g@addto@macro\input@path{{informe/}}
+\makeatother
+\graphicspath{{informe/}}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{longtable}
@@ -71,6 +84,8 @@
   aboveskip=0.5em,
   belowskip=0.5em
 }
+
+\input{resultados}
 
 \begin{document}
 
