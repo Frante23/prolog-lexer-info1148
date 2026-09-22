@@ -1,0 +1,85 @@
+\section{Reglas de prioridad y máxima coincidencia}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Resolución de superposiciones entre patrones.}
+\label{tab:prioridad}
+\begin{tabularx}{\textwidth}{L{2.7cm}YL{4.3cm}}
+\toprule
+\tableheader{Caso} & \tableheader{Regla aplicada} & \tableheader{Resultado} \\
+\midrule
+\texttt{\textbackslash== / \textbackslash= / ==} & Los operadores se prueban por longitud descendente. El lexer no confirma \texttt{\textbackslash=} si existe otro signo igual consecutivo. & \texttt{\textbackslash==} cuando la entrada es \texttt{\textbackslash==}. \\
+\rowcolor{palegray} \texttt{=.. / =} & Tras reconocer \texttt{=} como aceptación provisional, se continúa por dos puntos si están disponibles. & \texttt{=..} cuando la entrada es \texttt{=..}. \\
+\texttt{:- / :} & Solo \texttt{:-} pertenece al subconjunto. Un \texttt{:} aislado genera un diagnóstico. & \texttt{:-} o error en \texttt{:}. \\
+\rowcolor{palegray} \texttt{\_ / \_Variable} & Se reconoce primero el identificador completo. Solo el lexema exacto \texttt{\_} se clasifica como anónimo. & VARIABLE\_ANONIMA o VARIABLE. \\
+\texttt{is / island} & Se consume la palabra completa y después se consulta la tabla de operadores alfabéticos. & \makecell[l]{OPERADOR\_\\ARITMETICO o ATOMO.} \\
+\rowcolor{palegray} \texttt{-25} & El signo queda fuera del patrón numérico y se emite como operador independiente. & \texttt{-} seguido de ENTERO \texttt{25}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La implementación aplica estas reglas dentro de un orden de decisión único. Primero reconoce espacios y comentarios, porque no deben producir tokens. Después procesa los literales citados, los números y los identificadores. Los operadores simbólicos se comparan por longitud descendente y los delimitadores se dejan para el final. Si ninguna categoría acepta el carácter actual, se registra un error y se avanza una posición.
+
+Esta secuencia evita dos problemas concretos. Un comentario de bloque debe detectarse antes del operador división, y una palabra completa debe reconocerse antes de decidir si corresponde a \texttt{is}, \texttt{mod} o a un átomo ordinario. La prioridad, por tanto, no reemplaza la máxima coincidencia; ambas reglas trabajan juntas.
+
+\section{Diseño e implementación}
+
+\subsection{Arquitectura de la solución}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Componentes de la implementación.}
+\label{tab:arquitectura}
+\begin{tabularx}{\textwidth}{L{3cm}L{3.6cm}Y}
+\toprule
+\tableheader{Archivo} & \tableheader{Componente} & \tableheader{Responsabilidad} \\
+\midrule
+\path{src/lexer.py} & \texttt{Token} y \texttt{LexError} & Representan salidas inmutables con tipo, lexema, posición y atributo opcional. \\
+\rowcolor{palegray} \path{src/lexer.py} & \texttt{SymbolTable} & Interna átomos, variables y literales; reutiliza el índice de un lexema repetido. \\
+\path{src/lexer.py} & \texttt{Lexer.scan} & Recorre la fuente una vez, aplica prioridad, actualiza posiciones y recupera errores. \\
+\rowcolor{palegray} \path{src/cli.py} & Interfaz CLI & Lee UTF-8 y emite salida textual o JSON; retorna 1 si encuentra errores. \\
+\path{tests/test_lexer.py} & Pruebas & Reproduce 28 casos válidos y 12 casos inválidos, de posición o recuperación. \\
+\rowcolor{palegray} \path{corpus/} & Entradas completas & Contiene un programa sin errores y otro con varios errores recuperables. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La interfaz carga el archivo como texto UTF-8 y lo entrega a \texttt{Lexer.scan}. El recorrido mantiene el índice absoluto, la línea y la columna. Antes de consumir un lexema guarda su posición inicial; después actualiza el contador con el texto realmente leído. Los identificadores y números se reconocen mediante patrones compilados, mientras que los literales citados y comentarios de bloque se procesan manualmente para distinguir cierre, salto de línea y escape. Los operadores simbólicos se consultan en una secuencia ordenada desde el lexema más largo.
+
+El resultado agrupa la lista de tokens, la lista de errores y la tabla de lexemas. La interfaz puede imprimir tokens en el formato solicitado o serializar el resultado completo en JSON. Como cada carácter consumido hace avanzar el índice y la cantidad de operadores es fija, el costo del recorrido crece linealmente con el tamaño de la entrada. Los errores consumen el fragmento problemático y el análisis continúa cuando existe un límite de recuperación identificable.
+
+\subsection{Formato de salida}
+
+El siguiente fragmento proviene de \path{corpus/programa_valido.pl}. El quinto campo corresponde al índice de la tabla de lexemas cuando la categoría lo utiliza.
+
+\begin{lstlisting}[style=terminal]
+<ATOMO, 'padre', 2, 1, 0>
+<PARENTESIS_IZQ, '(', 2, 6>
+<ATOMO, 'juan', 2, 7, 1>
+<COMA, ',', 2, 11>
+<ATOMO, 'ana', 2, 13, 2>
+<PARENTESIS_DER, ')', 2, 16>
+<PUNTO, '.', 2, 17>
+\end{lstlisting}
+
+\subsection{Tabla de lexemas}
+
+La tabla usa diccionarios que conservan un índice por primera aparición. Los átomos no citados y citados comparten una tabla; las variables poseen otra; y los enteros, reales y cadenas se registran como pares \texttt{(tipo, lexema)}, lo que evita mezclar valores escritos de forma distinta. La variable anónima no se interna porque cada aparición representa una variable nueva y no debe compartir identidad.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Ejemplo de internación sin duplicados.}
+\label{tab:lexemas}
+\begin{tabularx}{\textwidth}{L{2.5cm}YL{4.5cm}}
+\toprule
+\tableheader{Tabla} & \tableheader{Ejemplo} & \tableheader{Regla} \\
+\midrule
+Átomos & \texttt{padre $\rightarrow$ 0; juan $\rightarrow$ 1; ana $\rightarrow$ 2} & El mismo lexema reutiliza el índice. \\
+\rowcolor{palegray} Variables & \texttt{X $\rightarrow$ 0; Z $\rightarrow$ 1; Y $\rightarrow$ 2} & \texttt{\_} se excluye. \\
+Literales & \texttt{(ENTERO, 52) $\rightarrow$ 0} y \texttt{(CADENA, "Ana Perez") $\rightarrow$ 1} & El tipo y la escritura forman la clave. \\
+\bottomrule
+\end{tabularx}
+\end{table}
