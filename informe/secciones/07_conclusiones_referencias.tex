@@ -1,12 +1,10 @@
 \section{Conclusiones}
 
-El analizador cumple el objetivo planteado para el subconjunto definido: reconoce las categorías obligatorias, conserva la posición inicial de cada token, registra átomos, variables y literales sin duplicados innecesarios, y comunica los errores junto con el fragmento que los produce. Esta conclusión se apoya en 40 pruebas automatizadas finalizadas sin fallos y en dos ejecuciones completas. El programa válido produjo 94 tokens sin diagnósticos; el programa inválido permitió recuperar 30 tokens y reportó seis errores.
+El analizador cumple el objetivo planteado para el subconjunto definido: reconoce las categorías obligatorias, conserva la posición inicial de cada token, registra átomos, variables y literales sin duplicados innecesarios, y comunica los errores junto con el fragmento que los produce. Esta conclusión se apoya en \PruebasTotal{} pruebas automatizadas finalizadas sin fallos y en dos ejecuciones completas. El programa válido produjo \TokensValidos{} tokens sin diagnósticos; el programa inválido permitió recuperar \TokensInvalidos{} tokens y reportó \ErroresInvalidos{} errores.
 
 La máxima coincidencia resultó decisiva en los operadores con prefijos compartidos. Sin ella, \verb|\==| podría dividirse como \verb|\=| y \texttt{=}, mientras que \texttt{=..} podría reducirse prematuramente a \texttt{=}. La clasificación posterior de identificadores resolvió un problema distinto: \texttt{is} se reconoce como operador aritmético, pero \texttt{island} permanece como átomo. También se optó por tratar el signo como operador independiente, decisión que mantiene la etapa léxica separada de la interpretación sintáctica de una expresión.
 
 El alcance sigue siendo limitado de forma deliberada. Se admiten identificadores ASCII, un conjunto acotado de escapes y números decimales, pero no todas las extensiones de SWI-Prolog. Un comentario de bloque abierto consume hasta el final del archivo porque no existe un cierre seguro desde el cual reanudar el recorrido. Como trabajo posterior, la solución podría incorporar identificadores Unicode, otras formas numéricas y la generación automática de tablas de transición a partir de una especificación única. Esas ampliaciones tendrían que acompañarse de nuevas pruebas y de la actualización del modelo formal para conservar la coherencia alcanzada.
-
-\section{Referencias}
 
 \begin{thebibliography}{9}
 
@@ -17,7 +15,7 @@ Aho, A. V., Lam, M. S., Sethi, R., y Ullman, J. D. (2007). \textit{Compilers: Pr
 Hopcroft, J. E., Motwani, R., y Ullman, J. D. (2007). \textit{Introduction to automata theory, languages, and computation} (3.ª ed.). Pearson.
 
 \bibitem{pythonre}
-Python Software Foundation. (2026). \textit{re --- Regular expression operations}. Python 3.14.7 documentation. \url{https://docs.python.org/3/library/re.html}
+Python Software Foundation. (2026). \textit{re --- Regular expression operations}. Documentación de Python 3. Recuperado el 22 de septiembre de 2026 de \url{https://docs.python.org/3/library/re.html}
 
 \bibitem{swisyntax}
 SWI-Prolog. (s. f.). \textit{The SWI-Prolog syntax}. Recuperado el 22 de septiembre de 2026 de \url{https://www.swi-prolog.org/pldoc/man?section=syntax}

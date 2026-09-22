@@ -39,14 +39,15 @@ Esta secuencia evita dos problemas concretos. Un comentario de bloque debe detec
 \path{src/lexer.py} & \texttt{Token} y \texttt{LexError} & Representan salidas inmutables con tipo, lexema, posición y atributo opcional. \\
 \rowcolor{palegray} \path{src/lexer.py} & \texttt{SymbolTable} & Interna átomos, variables y literales; reutiliza el índice de un lexema repetido. \\
 \path{src/lexer.py} & \texttt{Lexer.scan} & Recorre la fuente una vez, aplica prioridad, actualiza posiciones y recupera errores. \\
-\rowcolor{palegray} \path{src/cli.py} & Interfaz CLI & Lee UTF-8 y emite salida textual o JSON; retorna 1 si encuentra errores. \\
-\path{tests/test_lexer.py} & Pruebas & Reproduce 28 casos válidos y 12 casos inválidos, de posición o recuperación. \\
+\rowcolor{palegray} \path{src/cli.py} & Interfaz CLI & Lee UTF-8 con BOM opcional y emite texto o JSON en UTF-8; retorna 0, 1 o 2 según el resultado. \\
+\path{tests/} & Pruebas & Comprueba categorías, posiciones, recuperación, interfaz y corpus completo. \\
 \rowcolor{palegray} \path{corpus/} & Entradas completas & Contiene un programa sin errores y otro con varios errores recuperables. \\
+\path{scripts/validate.py} & Evidencia reproducible & Ejecuta la suite y el corpus; actualiza resultados JSON y cifras del informe. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-La interfaz carga el archivo como texto UTF-8 y lo entrega a \texttt{Lexer.scan}. El recorrido mantiene el índice absoluto, la línea y la columna. Antes de consumir un lexema guarda su posición inicial; después actualiza el contador con el texto realmente leído. Los identificadores y números se reconocen mediante patrones compilados, mientras que los literales citados y comentarios de bloque se procesan manualmente para distinguir cierre, salto de línea y escape. Los operadores simbólicos se consultan en una secuencia ordenada desde el lexema más largo.
+La interfaz carga el archivo como texto UTF-8, acepta un BOM inicial opcional y lo entrega a \texttt{Lexer.scan} sin alterar sus saltos de línea. El recorrido mantiene el índice absoluto, la línea y la columna. Antes de consumir un lexema guarda su posición inicial; después actualiza el contador con el texto realmente leído. Los identificadores y números se reconocen mediante patrones compilados, mientras que los literales citados y comentarios de bloque se procesan manualmente para distinguir cierre, salto de línea y escape. Los operadores simbólicos se consultan en una secuencia ordenada desde el lexema más largo. Los códigos de salida son 0 si no hay errores léxicos, 1 si se detectaron errores recuperables o hasta EOF, y 2 ante un archivo ilegible, UTF-8 inválido o argumentos incorrectos.
 
 El resultado agrupa la lista de tokens, la lista de errores y la tabla de lexemas. La interfaz puede imprimir tokens en el formato solicitado o serializar el resultado completo en JSON. Como cada carácter consumido hace avanzar el índice y la cantidad de operadores es fija, el costo del recorrido crece linealmente con el tamaño de la entrada. Los errores consumen el fragmento problemático y el análisis continúa cuando existe un límite de recuperación identificable.
 
@@ -66,7 +67,7 @@ El siguiente fragmento proviene de \path{corpus/programa_valido.pl}. El quinto c
 
 \subsection{Tabla de lexemas}
 
-La tabla usa diccionarios que conservan un índice por primera aparición. Los átomos no citados y citados comparten una tabla; las variables poseen otra; y los enteros, reales y cadenas se registran como pares \texttt{(tipo, lexema)}, lo que evita mezclar valores escritos de forma distinta. La variable anónima no se interna porque cada aparición representa una variable nueva y no debe compartir identidad.
+La tabla usa diccionarios que conservan un índice por primera aparición. Los átomos no citados y citados comparten una tabla; las variables poseen otra; y los enteros, reales y cadenas se registran como pares \texttt{(tipo, lexema)}, lo que evita mezclar valores escritos de forma distinta. Se conserva la escritura original: \texttt{juan} y \texttt{'juan'} tienen entradas distintas, y no se interpretan los escapes ni se convierten números a valores de Python. Los índices son locales a cada tabla y comienzan en cero; el tipo del token identifica cuál debe consultarse. La variable anónima no se interna porque cada aparición representa una variable nueva y no debe compartir identidad.
 
 \begin{table}[H]
 \centering

@@ -14,7 +14,7 @@
 \rowcolor{palegray} Cadena sin cierre & \texttt{"hola} & \texttt{1:1 Cadena sin cierre} & Consume hasta salto de línea o EOF y continúa. \\
 Comentario sin cierre & \verb|/* texto| & \texttt{1:1 Comentario de bloque sin cierre} & Consume hasta EOF; no existe un límite seguro posterior. \\
 \rowcolor{palegray} Carácter no admitido & \texttt{@} & \texttt{1:1 Caracter no admitido} & Consume un carácter y continúa. \\
-Número con sufijo & \texttt{12abc} & \texttt{1:1 Numero mal formado} & Consume el fragmento alfanumérico completo. \\
+Número con sufijo & \texttt{12abc} & \texttt{1:1 Numero mal formado} & Consume el fragmento ASCII; conserva el punto que no preceda a un dígito. \\
 \rowcolor{palegray} Exponente incompleto & \texttt{2e} & \texttt{1:1 Numero mal formado} & Consume el fragmento numérico completo. \\
 Puntos repetidos & \texttt{3.14.15} & \texttt{1:1 Numero mal formado} & Consume el fragmento numérico completo. \\
 \rowcolor{palegray} Escape no admitido & \verb|"x\q"| & \texttt{1:1 Secuencia de escape no admitida} & Consume hasta la comilla de cierre. \\
@@ -23,7 +23,7 @@ Puntos repetidos & \texttt{3.14.15} & \texttt{1:1 Numero mal formado} & Consume 
 
 \section{Plan de pruebas y resultados}
 
-Los resultados fueron verificados el 22 de septiembre de 2026 con Python 3.12. La ejecución automatizada, reproducida en el anexo, completó 40 pruebas con estado \texttt{OK}. De ellas, 28 cubren entradas válidas y 12 comprueban entradas inválidas, posiciones o recuperación. El archivo válido produjo 94 tokens y cero errores; el archivo con errores produjo 30 tokens, seis diagnósticos y código de salida 1.
+Los resultados se generaron el \FechaValidacion{} con Python \PythonValidacion{} mediante \path{scripts/validate.py}. La ejecución automatizada, reproducida en el anexo, completó \PruebasTotal{} pruebas con estado \texttt{OK}. Se conservan \PruebasValidasBase{} pruebas válidas y \PruebasInvalidasBase{} pruebas de entradas inválidas, posiciones o recuperación del corpus original; se añaden \PruebasRegresion{} pruebas de regresión del lexer y \PruebasCLI{} pruebas de la interfaz. El archivo válido produjo \TokensValidos{} tokens y \ErroresValidos{} errores; el archivo con errores produjo \TokensInvalidos{} tokens, \ErroresInvalidos{} diagnósticos y código de salida 1. Las cifras se incorporan desde \path{resultados.tex}, generado a partir de la ejecución, y el registro detallado queda en \path{docs/validation.json}.
 
 \footnotesize
 \begin{longtable}{C{0.9cm}L{2.6cm}L{2.75cm}L{3.0cm}L{3.0cm}C{1.3cm}}
@@ -59,5 +59,7 @@ P39 & \texttt{1e+} & Exponente incompleto & Fragmento \texttt{1e+} & Fragmento \
 La cobertura comprueba cada familia léxica, los límites entre palabras y operadores, la deduplicación de lexemas y la actualización de líneas y columnas. Los casos P16 y P24 muestran que la prioridad no se resuelve solo por el orden de las alternativas: primero se consume el lexema completo y después se clasifica. Los casos P39 y P40 verifican que un exponente incompleto se reporte como un solo fragmento y que el analizador retome el reconocimiento en el delimitador siguiente.
 
 El archivo con errores confirma una recuperación parcial. Después de \texttt{@}, \texttt{12abc}, una cadena abierta al final de línea, \texttt{3.14.15} y un escape inválido, el lexer vuelve a reconocer tokens posteriores. En cambio, un comentario de bloque abierto consume hasta el final del archivo porque no existe una marca léxica segura que indique dónde habría terminado.
+
+Las regresiones verifican además saltos LF, CRLF y CR, preservación del punto de cláusula después de números mal formados y fragmentos de literales que terminan en una barra invertida. La interfaz se comprueba ejecutando procesos reales: formato solicitado en el enunciado, referencias a la tabla de lexemas, recuperación en el corpus inválido, BOM UTF-8, texto Unicode incluso con salida redirigida, archivo vacío, ayuda, archivo inexistente y codificación inválida. Un error de lectura genera un diagnóstico de uso y código 2 sin una traza interna de Python.
 
 La principal limitación está en el alcance: el programa usa identificadores ASCII y no intenta reproducir toda la sintaxis de SWI-Prolog. Tampoco decide si una secuencia de tokens forma una cláusula válida. En consecuencia, los resultados demuestran conformidad con el subconjunto definido en este informe, no compatibilidad total con ISO Prolog.

@@ -9,44 +9,65 @@
 \toprule
 \tableheader{Recurso} & \tableheader{Ubicación o enlace} \\
 \midrule
-Repositorio Git & \textit{Enlace que debe incorporarse desde el repositorio definitivo del grupo.} \\
+Repositorio Git & \url{https://github.com/Frante23/prolog-lexer-info1148} \\
 \rowcolor{palegray} Código principal & \path{src/lexer.py} y \path{src/cli.py}. \\
-Pruebas & \path{tests/test_lexer.py}. \\
+Pruebas & \path{tests/test_lexer.py}, \path{tests/test_lexer_regressions.py} y \path{tests/test_cli.py}. \\
 \rowcolor{palegray} Corpus & \path{corpus/programa_valido.pl} y \path{corpus/programa_con_errores.pl}. \\
+Evidencia & \path{docs/validation.json} y \path{informe/resultados.tex}, generados por \path{scripts/validate.py}. \\
+\rowcolor{palegray} Compilación & \path{scripts/build_report.py}; instrucciones locales y Overleaf en \path{informe/README.md}. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsection{Evidencia de ejecución}
 
+La siguiente secuencia reproduce la validación y genera el PDF actualizado. Las cifras se obtienen de la ejecución de las pruebas y del corpus; la duración depende del equipo.
+
 \begin{lstlisting}[style=terminal]
-$ python -m unittest discover -s tests -v
-Ran 40 tests in 0.001s
-OK
-
-$ python -m src.cli corpus/programa_valido.pl --json
-94 tokens | 0 errores | codigo de salida 0
-
-$ python -m src.cli corpus/programa_con_errores.pl --json
-30 tokens | 6 errores | codigo de salida 1
+python scripts/validate.py
+python scripts/build_report.py
+python -m src.cli corpus/programa_valido.pl --json
+python -m src.cli corpus/programa_con_errores.pl --json
 \end{lstlisting}
-
-\subsection{Registro de contribuciones}
-
-El registro definitivo debe extraerse del historial del repositorio, ya que la trazabilidad exige asociar actividades con commits existentes. Los campos se mantienen abiertos porque el material revisado no incluye un repositorio Git ni evidencia que permita atribuir tareas individuales. Cada integrante debe conocer la solución completa, aunque el desarrollo se distribuya.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Registro que debe completarse con el historial Git del grupo.}
-\label{tab:contribuciones}
-\begin{tabularx}{\textwidth}{L{4.3cm}YY}
+\caption{Resultados de la validación con Python \PythonValidacion{}.}
+\begin{tabularx}{\textwidth}{Y C{2cm} C{2cm} C{2cm}}
 \toprule
-\tableheader{Integrante} & \tableheader{Actividad realizada} & \tableheader{Commit o evidencia} \\
+\tableheader{Ejecución} & \tableheader{Pruebas o tokens} & \tableheader{Fallos o errores} & \tableheader{Salida} \\
 \midrule
-Jose Jimenez Saavedra & \rule{4.0cm}{0.3pt} & \rule{4.0cm}{0.3pt} \\
-\rowcolor{palegray} Franco Oyarzo Calisto & \rule{4.0cm}{0.3pt} & \rule{4.0cm}{0.3pt} \\
-Demian Quezada Pasten & \rule{4.0cm}{0.3pt} & \rule{4.0cm}{0.3pt} \\
+Suite automatizada & \PruebasTotal{} & 0 & 0 \\
+\rowcolor{palegray} Archivo válido & \TokensValidos{} & \ErroresValidos{} & 0 \\
+Archivo con errores & \TokensInvalidos{} & \ErroresInvalidos{} & 1 \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+El informe se puede compilar con pdfLaTeX o XeLaTeX. El script ejecuta al menos dos pasadas y devuelve un fallo si quedan referencias sin resolver. Usa Latin Modern incluida en la distribución TeX y no requiere fuentes del sistema operativo ni Perl. El resultado queda en \path{informe/build/main.pdf}; \path{informe/main.pdf} conserva la versión revisada para entrega.
+
+\subsection{Registro de contribuciones}
+
+La Tabla~\ref{tab:contribuciones} cita commits existentes del repositorio y su autor registrado. La revisión parte de \texttt{4e40d48} y conserva el historial previo, cuyos commits figuran bajo la identidad \texttt{Frante23}. Las correcciones posteriores usan la identidad ya configurada, \texttt{deimon005}. Estos datos registran autoría Git; no permiten atribuir a otros integrantes actividades que no constan bajo su identidad. Cada integrante debe comprender la solución y registrar sus propias contribuciones, según el enunciado.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Selección de contribuciones verificables en el historial Git.}
+\label{tab:contribuciones}
+\begin{tabularx}{\textwidth}{L{2.8cm}Y L{3cm}}
+\toprule
+\tableheader{Autor Git} & \tableheader{Actividad registrada} & \tableheader{Commit} \\
+\midrule
+Frante23 & Implementación inicial del núcleo y la interfaz. & \texttt{5ab4aa9}, \texttt{ba6f951} \\
+\rowcolor{palegray} Frante23 & Pruebas iniciales y fuentes del informe. & \texttt{c4b3162}, \texttt{7dbb0f5} \\
+deimon005 & CLI UTF-8 y validación de archivos completos. & \texttt{1b18f60} \\
+\rowcolor{palegray} deimon005 & Posiciones, recuperación y pruebas de regresión. & \texttt{8bca7de} \\
+deimon005 & Evidencia reproducible para el informe. & \texttt{239d277} \\
+\rowcolor{palegray} deimon005 & Compilación portable con ambos motores. & \texttt{6180328} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El historial completo se consulta con \texttt{git log --oneline} o desde GitHub Desktop. Para la plataforma de entrega se debe nombrar el PDF \path{Tarea_JefeGrupo_nombreApellido.pdf}, sustituyendo nombre y apellido por los del jefe de grupo designado.

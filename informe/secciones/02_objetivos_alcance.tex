@@ -10,7 +10,7 @@ Los objetivos específicos consisten en definir las categorías admitidas median
 
 \section{Alcance del analizador}
 
-La especificación restringe los identificadores y dígitos a caracteres ASCII. Esta decisión mantiene explícitas las clases de transición del autómata y acota la implementación al subconjunto pedido, aunque SWI-Prolog admite identificadores Unicode más amplios \cite{swisyntax}. Los literales citados sí pueden contener otros caracteres, siempre que no introduzcan un salto de línea ni una secuencia de escape fuera de la convención adoptada.
+La especificación restringe los identificadores y dígitos a caracteres ASCII. Esta decisión mantiene explícitas las clases de transición del autómata y acota la implementación al subconjunto pedido, aunque SWI-Prolog admite identificadores Unicode más amplios \cite{swisyntax}. Los literales citados sí pueden contener otros caracteres, siempre que no introduzcan CR o LF ni una secuencia de escape fuera de la convención adoptada. Los separadores admitidos son espacio, tabulación, CR, LF, salto de página y tabulación vertical; CRLF cuenta como un solo salto de línea. Las posiciones comienzan en 1 y cada tabulación ocupa una columna lógica, independientemente de su ancho visual en el editor.
 
 El analizador produce tokens y errores léxicos, pero no determina si esos tokens forman una cláusula correcta. Tampoco interpreta precedencias, realiza unificación, administra ámbitos ni asigna significado a los literales. La Tabla~\ref{tab:alcance} resume esa frontera para evitar que los resultados se presenten como una implementación completa de Prolog.
 
