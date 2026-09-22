@@ -41,6 +41,33 @@ En ese caso el resultado reemplaza directamente `informe/main.pdf`, que se
 conserva en el repositorio como versión de entrega. Al usar el script, copia el
 PDF validado de `build/main.pdf` a `main.pdf` cuando actualices esa entrega.
 
+## Actualizar el PDF incluido en Git
+
+Para evitar que las fuentes y el PDF publicado diverjan, usa:
+
+```bash
+python scripts/build_report.py --publish
+```
+
+Este comando ejecuta las pruebas y ambos archivos del corpus, actualiza las
+cifras, compila y reemplaza `informe/main.pdf` únicamente si todo termina bien.
+Con `--publish`, la carpeta de salida no puede ser `informe/`: así un fallo de
+compilación conserva el PDF publicado anteriormente. Revisa visualmente el PDF
+generado antes de incorporarlo al commit; la compilación no detecta todos los
+problemas de presentación.
+
+Como alternativa portable se admite [Tectonic](https://tectonic-typesetting.github.io/),
+con su ejecutable disponible en `PATH`:
+
+```bash
+python scripts/build_report.py --engine tectonic --publish
+```
+
+Tectonic gestiona las pasadas y descarga los paquetes necesarios en su caché;
+la primera compilación requiere conexión a Internet. No agrega dependencias al
+lexer ni a sus pruebas. El PDF de plataforma debe copiarse con el nombre
+`Tarea_JefeGrupo_nombreApellido.pdf`, sustituyendo los datos del jefe real.
+
 ## Overleaf
 
 1. Sube el **contenido** de `informe/`, incluyendo `secciones/`, `figuras/` y

@@ -7,9 +7,17 @@
   \usepackage{lmodern}
 \else
   \usepackage{fontspec}
-  \setmainfont{Latin Modern Roman}
-  \setsansfont{Latin Modern Sans}
-  \setmonofont{Latin Modern Mono}[Scale=MatchLowercase]
+  % Nombres de archivo: también funcionan sin registrar fuentes en el sistema.
+  \setmainfont{lmroman10-regular.otf}[
+    BoldFont=lmroman10-bold.otf,
+    ItalicFont=lmroman10-italic.otf,
+    BoldItalicFont=lmroman10-bolditalic.otf]
+  \setsansfont{lmsans10-regular.otf}[
+    BoldFont=lmsans10-bold.otf,
+    ItalicFont=lmsans10-oblique.otf,
+    BoldItalicFont=lmsans10-boldoblique.otf]
+  \setmonofont{lmmono10-regular.otf}[
+    ItalicFont=lmmono10-italic.otf,Scale=MatchLowercase]
 \fi
 \usepackage[provide=*,spanish]{babel}
 \addto\captionsspanish{\renewcommand{\tablename}{Tabla}}

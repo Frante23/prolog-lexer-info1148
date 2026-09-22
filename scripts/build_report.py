@@ -1,4 +1,4 @@
-"""Compila el informe con dos o más pasadas de LaTeX, sin requerir latexmk/Perl."""
+"""Compila el informe y permite publicar una versión validada, sin latexmk/Perl."""
 
 from __future__ import annotations
 
@@ -16,9 +16,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--engine",
-        choices=("pdflatex", "xelatex"),
+        choices=("pdflatex", "xelatex", "tectonic"),
         default="pdflatex",
         help="motor de LaTeX (predeterminado: pdflatex)",
+    )
+    parser.add_argument(
+        "--publish",
+        action="store_true",
+        help="ejecuta la validación y actualiza informe/main.pdf solo tras compilar sin errores",
     )
     parser.add_argument(
         "--output-dir",
@@ -30,13 +35,24 @@ def main() -> int:
     engine = shutil.which(args.engine)
     if engine is None:
         print(
-            f"No se encontró {args.engine} en PATH. Instala MiKTeX o TeX Live "
+            f"No se encontró {args.engine} en PATH. Instala MiKTeX, TeX Live o Tectonic "
             "y vuelve a abrir la terminal.",
             file=sys.stderr,
         )
         return 2
 
     output_dir = args.output_dir.resolve()
+    if args.publish and output_dir == REPORT_DIR.resolve():
+        parser.error("--publish requiere una carpeta de salida distinta de informe/")
+    if args.publish:
+        validation = subprocess.run(
+            [sys.executable, str(REPORT_DIR.parent / "scripts" / "validate.py")],
+            cwd=REPORT_DIR.parent, check=False,
+        )
+        if validation.returncode:
+            print("No se publica el PDF: la validación falló.", file=sys.stderr)
+            return 1
+
     output_dir.mkdir(parents=True, exist_ok=True)
     command = [
         engine,
@@ -46,6 +62,9 @@ def main() -> int:
         f"-output-directory={output_dir}",
         "main.tex",
     ]
+    if args.engine == "tectonic":
+        # Tectonic gestiona sus propias pasadas y descarga los paquetes necesarios.
+        command = [engine, "--keep-logs", "--outdir", str(output_dir), "main.tex"]
     for pass_number in range(1, 5):
         print(f"Compilación {pass_number}: {args.engine}", flush=True)
         result = subprocess.run(
@@ -73,6 +92,11 @@ def main() -> int:
                 "Rerun to get outlines right",
             )
         )
+        if args.engine == "tectonic":
+            if needs_rerun:
+                print(f"Referencias sin converger. Revisa {output_dir / 'main.log'}", file=sys.stderr)
+                return 1
+            break
         if pass_number >= 2 and not needs_rerun:
             break
     else:
@@ -82,7 +106,17 @@ def main() -> int:
     if "There were undefined references" in log or "There were undefined citations" in log:
         print(f"Hay referencias sin resolver. Revisa {output_dir / 'main.log'}", file=sys.stderr)
         return 1
-    print(f"PDF generado: {output_dir / 'main.pdf'}")
+    pdf = output_dir / "main.pdf"
+    if not pdf.is_file() or not pdf.read_bytes().startswith(b"%PDF-"):
+        print("El motor no produjo un PDF válido; no se publica.", file=sys.stderr)
+        return 1
+    print(f"PDF generado: {pdf}")
+    if args.publish:
+        # Sustitución solo tras validar y compilar; un fallo previo conserva la entrega.
+        staging = REPORT_DIR / "main.pdf.tmp"
+        shutil.copyfile(pdf, staging)
+        staging.replace(REPORT_DIR / "main.pdf")
+        print(f"PDF publicado: {REPORT_DIR / 'main.pdf'}")
     return 0
 
 
