@@ -1,0 +1,63 @@
+\section{Tratamiento de errores léxicos}
+
+\begin{longtable}{L{3.2cm}L{2.3cm}L{4.7cm}L{4.5cm}}
+\caption{Errores, mensajes y estrategia de recuperación.}\label{tab:errores}\\
+\toprule
+\tableheader{Error} & \tableheader{Ejemplo} & \tableheader{Mensaje} & \tableheader{Recuperación} \\
+\midrule
+\endfirsthead
+\toprule
+\tableheader{Error} & \tableheader{Ejemplo} & \tableheader{Mensaje} & \tableheader{Recuperación} \\
+\midrule
+\endhead
+Átomo citado sin cierre & \texttt{'juan} & \texttt{1:1 Atomo citado sin cierre} & Consume hasta salto de línea o EOF y continúa. \\
+\rowcolor{palegray} Cadena sin cierre & \texttt{"hola} & \texttt{1:1 Cadena sin cierre} & Consume hasta salto de línea o EOF y continúa. \\
+Comentario sin cierre & \verb|/* texto| & \texttt{1:1 Comentario de bloque sin cierre} & Consume hasta EOF; no existe un límite seguro posterior. \\
+\rowcolor{palegray} Carácter no admitido & \texttt{@} & \texttt{1:1 Caracter no admitido} & Consume un carácter y continúa. \\
+Número con sufijo & \texttt{12abc} & \texttt{1:1 Numero mal formado} & Consume el fragmento alfanumérico completo. \\
+\rowcolor{palegray} Exponente incompleto & \texttt{2e} & \texttt{1:1 Numero mal formado} & Consume el fragmento numérico completo. \\
+Puntos repetidos & \texttt{3.14.15} & \texttt{1:1 Numero mal formado} & Consume el fragmento numérico completo. \\
+\rowcolor{palegray} Escape no admitido & \verb|"x\q"| & \texttt{1:1 Secuencia de escape no admitida} & Consume hasta la comilla de cierre. \\
+\bottomrule
+\end{longtable}
+
+\section{Plan de pruebas y resultados}
+
+Los resultados fueron verificados el 22 de septiembre de 2026 con Python 3.12. La ejecución automatizada, reproducida en el anexo, completó 40 pruebas con estado \texttt{OK}. De ellas, 28 cubren entradas válidas y 12 comprueban entradas inválidas, posiciones o recuperación. El archivo válido produjo 94 tokens y cero errores; el archivo con errores produjo 30 tokens, seis diagnósticos y código de salida 1.
+
+\footnotesize
+\begin{longtable}{C{0.9cm}L{2.6cm}L{2.75cm}L{3.0cm}L{3.0cm}C{1.3cm}}
+\caption{Selección representativa del corpus automatizado.}\label{tab:pruebas}\\
+\toprule
+\tableheader{ID} & \tableheader{Entrada} & \tableheader{Objetivo} & \tableheader{Esperado} & \tableheader{Obtenido} & \tableheader{Estado} \\
+\midrule
+\endfirsthead
+\toprule
+\tableheader{ID} & \tableheader{Entrada} & \tableheader{Objetivo} & \tableheader{Esperado} & \tableheader{Obtenido} & \tableheader{Estado} \\
+\midrule
+\endhead
+P01 & \texttt{padre} & Átomo simple & ATOMO & ATOMO & OK \\
+\rowcolor{palegray} P03 & \texttt{'Juan Perez'} & Átomo citado & \makecell[l]{ATOMO\_\\CITADO} & \makecell[l]{ATOMO\_\\CITADO} & OK \\
+P07 & \texttt{\_} & Anónima sin índice & \makecell[l]{VARIABLE\_\\ANONIMA} & \makecell[l]{VARIABLE\_\\ANONIMA} & OK \\
+\rowcolor{palegray} P10 & \texttt{2e-3} & Real con exponente & REAL & REAL & OK \\
+P16 & \verb|\==| & Máxima coincidencia & \verb|\==| & \verb|\==| & OK \\
+\rowcolor{palegray} P24 & \texttt{is island} & Límite de palabra & OP / ATOMO & OP / ATOMO & OK \\
+P27 & \texttt{padre(X)} repetido & Sin duplicados & Índices 0 y 0 & Índices 0 y 0 & OK \\
+\rowcolor{palegray} P29 & \texttt{'juan} & Cierre faltante & Error & Error recuperado & OK \\
+P31 & \verb|/* texto| & Comentario abierto & Error & Error hasta EOF & OK \\
+\rowcolor{palegray} P33 & \texttt{12abc} & Número mal formado & Error & Error recuperado & OK \\
+P35 & \texttt{3.14.15} & Dos puntos & Error & Error recuperado & OK \\
+\rowcolor{palegray} P38 & \verb|a.\n  @| & Ubicación & 2:3 & 2:3 & OK \\
+P39 & \texttt{1e+} & Exponente incompleto & Fragmento \texttt{1e+} & Fragmento \texttt{1e+} & OK \\
+\rowcolor{palegray} P40 & \texttt{12abc, ok.} & Recuperación numérica & \texttt{, ok .} & \texttt{, ok .} & OK \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\subsection{Análisis de resultados}
+
+La cobertura comprueba cada familia léxica, los límites entre palabras y operadores, la deduplicación de lexemas y la actualización de líneas y columnas. Los casos P16 y P24 muestran que la prioridad no se resuelve solo por el orden de las alternativas: primero se consume el lexema completo y después se clasifica. Los casos P39 y P40 verifican que un exponente incompleto se reporte como un solo fragmento y que el analizador retome el reconocimiento en el delimitador siguiente.
+
+El archivo con errores confirma una recuperación parcial. Después de \texttt{@}, \texttt{12abc}, una cadena abierta al final de línea, \texttt{3.14.15} y un escape inválido, el lexer vuelve a reconocer tokens posteriores. En cambio, un comentario de bloque abierto consume hasta el final del archivo porque no existe una marca léxica segura que indique dónde habría terminado.
+
+La principal limitación está en el alcance: el programa usa identificadores ASCII y no intenta reproducir toda la sintaxis de SWI-Prolog. Tampoco decide si una secuencia de tokens forma una cláusula válida. En consecuencia, los resultados demuestran conformidad con el subconjunto definido en este informe, no compatibilidad total con ISO Prolog.
