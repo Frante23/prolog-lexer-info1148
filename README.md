@@ -74,8 +74,8 @@ python -m unittest discover -s tests -v
 python scripts/validate.py
 ```
 
-Última validación: **69 pruebas aprobadas**. Se conservan 28 válidas y 12 de errores,
-posición o recuperación del corpus original, y se añaden 19 regresiones y 10 de
+Última validación: **75 pruebas aprobadas**. Se conservan 28 válidas y 12 de errores,
+posición o recuperación del corpus original, y se añaden 25 regresiones y 10 de
 la CLI. Los casos parametrizados se ejecutan como subpruebas dentro de esos métodos.
 
 | Archivo completo | Tokens | Errores | Salida |
@@ -86,6 +86,12 @@ la CLI. Los casos parametrizados se ejecutan como subpruebas dentro de esos mét
 `scripts/validate.py` ejecuta las pruebas y ambos archivos; solo si la validación
 termina correctamente actualiza [docs/validation.json](docs/validation.json) y las
 cifras del informe mediante `informe/resultados.tex`.
+
+La evidencia incluye las huellas SHA-256 del código, las pruebas, el corpus y el
+validador ejecutados. Se normaliza CRLF a LF antes de calcularlas para comparar
+checkouts de Windows y Linux. Si esos archivos cambian durante la ejecución, no
+se publica evidencia. Las huellas identifican el contenido probado; no certifican
+la autoría ni reemplazan el historial Git.
 
 ## Informe y autómatas
 

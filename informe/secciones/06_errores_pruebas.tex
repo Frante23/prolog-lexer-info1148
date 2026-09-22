@@ -56,6 +56,8 @@ P39 & \texttt{1e+} & Exponente incompleto & Fragmento \texttt{1e+} & Fragmento \
 
 \subsection{Análisis de resultados}
 
+El registro JSON incluye huellas SHA-256 de los archivos de código, pruebas, corpus y del propio validador. Antes de calcularlas se normalizan los finales CRLF a LF para comparar copias entre plataformas. El validador comprueba que estas entradas no hayan cambiado durante la ejecución. Las huellas permiten identificar el contenido probado y detectar evidencia desactualizada; no acreditan autoría ni sustituyen las contribuciones registradas en Git.
+
 La cobertura comprueba cada familia léxica, los límites entre palabras y operadores, la deduplicación de lexemas y la actualización de líneas y columnas. Los casos P16 y P24 muestran que la prioridad no se resuelve solo por el orden de las alternativas: primero se consume el lexema completo y después se clasifica. Los casos P39 y P40 verifican que un exponente incompleto se reporte como un solo fragmento y que el analizador retome el reconocimiento en el delimitador siguiente.
 
 El archivo con errores confirma una recuperación parcial. Después de \texttt{@}, \texttt{12abc}, una cadena abierta al final de línea, \texttt{3.14.15} y un escape inválido, el lexer vuelve a reconocer tokens posteriores. En cambio, un comentario de bloque abierto consume hasta el final del archivo porque no existe una marca léxica segura que indique dónde habría terminado.

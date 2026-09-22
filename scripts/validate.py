@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from datetime import date
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -16,6 +17,19 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def input_fingerprints() -> dict[str, str]:
+    """Identifica el código y corpus probados, independiente del checkout CRLF/LF."""
+    paths = [Path(__file__).resolve()]
+    for folder, pattern in (("src", "*.py"), ("tests", "*.py"), ("corpus", "*.pl")):
+        paths.extend((ROOT / folder).rglob(pattern))
+    return {
+        path.relative_to(ROOT).as_posix(): hashlib.sha256(
+            path.read_bytes().replace(b"\r\n", b"\n")
+        ).hexdigest()
+        for path in sorted(paths)
+    }
+
+
 def test_ids(suite: unittest.TestSuite):
     for item in suite:
         if isinstance(item, unittest.TestSuite):
@@ -26,6 +40,7 @@ def test_ids(suite: unittest.TestSuite):
 
 def main() -> int:
     sys.path.insert(0, str(ROOT))
+    fingerprints = input_fingerprints()
     suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"))
     identifiers = list(test_ids(suite))
     groups = Counter(identifier.split(".")[-2] for identifier in identifiers)
@@ -53,10 +68,16 @@ def main() -> int:
             "diagnostics": payload["errores"],
         }
 
+    if input_fingerprints() != fingerprints:
+        print("No se actualiza la evidencia: las entradas cambiaron durante las pruebas.")
+        return 1
+
     evidence = {
         "date": date.today().isoformat(),
         "python": platform.python_version(),
         "command": "python scripts/validate.py",
+        "input_hash_algorithm": "sha256; CRLF normalizado a LF",
+        "input_sha256": fingerprints,
         "tests": {"run": result.testsRun, "failures": 0, "errors": 0, "skipped": 0,
                   "groups": dict(sorted(groups.items())), "cases": identifiers},
         "corpus": corpus_results,
