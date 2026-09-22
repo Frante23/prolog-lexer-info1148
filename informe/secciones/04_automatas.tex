@@ -149,6 +149,32 @@ Las entradas de $\Sigma\setminus C$ llevan a $D_{\bot}$ también en la Tabla~\re
 
 \subsection{Estrategia integrada y correspondencia con el código}
 
+\subsubsection{Trazas de aceptación y fronteras}
+
+Las siguientes trazas separan la aceptación del autómata de la decisión del lexer sobre la frontera del lexema. Un estado no aceptador intermedio no implica que toda la entrada sea errónea: puede existir una aceptación anterior. A su vez, la regla numérica de frontera puede impedir emitir ese prefijo si ocultaría un número mal formado.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Trazas representativas y resultado observable.}
+\begin{tabularx}{\textwidth}{L{2cm}Y L{5.5cm}}
+\toprule
+\tableheader{Entrada} & \tableheader{Recorrido relevante} & \tableheader{Resultado del lexer} \\
+\midrule
+\texttt{12.} & $q_0,q_I,q_I,q_{.}$. La última aceptación está antes del punto. & ENTERO \texttt{12}, PUNTO \texttt{.}. \\
+\rowcolor{palegray} \texttt{2e-3} & $q_0,q_I,q_E,q_S,q_{Exp}$. El signo pertenece al exponente. & Un REAL con lexema \texttt{2e-3}. \\
+\texttt{1e+} & $q_0,q_I,q_E,q_S$. El estado final no acepta y el sufijo inicia con \texttt{e}. & Un error por \texttt{1e+}; no se emite ENTERO. \\
+\rowcolor{palegray} \texttt{3.14.15} & Se alcanza $q_R$ en \texttt{3.14}; la frontera siguiente es punto más dígito. & Un error por todo \texttt{3.14.15}. \\
+\texttt{\_X} & $q_0,q_{\_},q_V$. La aceptación de variable prolonga la anónima. & VARIABLE con índice; no se emite \texttt{\_} separado. \\
+\rowcolor{palegray} \texttt{is2} & $q_0,q_A,q_A,q_A$. Se consulta el lexema completo. & ATOMO, porque no coincide exactamente con \texttt{is}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Los casos numéricos se verifican en \path{tests/test_lexer.py} y \path{tests/test_lexer_regressions.py}. Estos archivos también contrastan operadores adyacentes sin espacios, prefijos incompletos y la prioridad de las citas sobre los marcadores de comentario. El caso \texttt{)][(,;.} se acepta léxicamente aunque no forme una cláusula: comprobar el orden de los delimitadores sería análisis sintáctico y queda fuera del enunciado.
+
+\subsubsection{Despacho de reconocedores}
+
 El programa no materializa un AFD único en memoria. Utiliza una estrategia equivalente: un despachador selecciona la categoría a partir del carácter inicial. Primero descarta espacios y comentarios; después reconoce citas, números e identificadores; finalmente intenta operadores, delimitadores y el diagnóstico de carácter no admitido. Las expresiones \texttt{IDENTIFIER}, \texttt{REAL} e \texttt{INTEGER} describen los lenguajes de sus AFD, y \texttt{SYMBOL\_OPERATORS} codifica las hojas del trie. Esto establece equivalencia de reconocimiento; no afirma que el motor \texttt{re} de Python ejecute internamente un AFD.
 
 Las superposiciones se resuelven de manera explícita: \texttt{/*} tiene prioridad sobre \texttt{/}; una cita consume su interior antes de reconocer operadores; un identificador se completa antes de reclasificar palabras; y los operadores se prueban por longitud descendente. Todos los reconocedores aceptan un lexema, descartan un separador o producen un diagnóstico que avanza la lectura. El ciclo principal conserva una sola posición y termina cuando llega al final de la fuente. Así se relacionan los autómatas, las reglas de prioridad y la recuperación sin incorporar análisis sintáctico.
