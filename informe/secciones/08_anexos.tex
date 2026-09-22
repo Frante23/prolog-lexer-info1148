@@ -1,0 +1,52 @@
+\section{Anexos}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Recursos asociados al informe.}
+\label{tab:recursos}
+\begin{tabularx}{\textwidth}{L{4cm}Y}
+\toprule
+\tableheader{Recurso} & \tableheader{Ubicación o enlace} \\
+\midrule
+Repositorio Git & \textit{Enlace que debe incorporarse desde el repositorio definitivo del grupo.} \\
+\rowcolor{palegray} Código principal & \path{src/lexer.py} y \path{src/cli.py}. \\
+Pruebas & \path{tests/test_lexer.py}. \\
+\rowcolor{palegray} Corpus & \path{corpus/programa_valido.pl} y \path{corpus/programa_con_errores.pl}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Evidencia de ejecución}
+
+\begin{lstlisting}[style=terminal]
+$ python -m unittest discover -s tests -v
+Ran 40 tests in 0.001s
+OK
+
+$ python -m src.cli corpus/programa_valido.pl --json
+94 tokens | 0 errores | codigo de salida 0
+
+$ python -m src.cli corpus/programa_con_errores.pl --json
+30 tokens | 6 errores | codigo de salida 1
+\end{lstlisting}
+
+\subsection{Registro de contribuciones}
+
+El registro definitivo debe extraerse del historial del repositorio, ya que la trazabilidad exige asociar actividades con commits existentes. Los campos se mantienen abiertos porque el material revisado no incluye un repositorio Git ni evidencia que permita atribuir tareas individuales. Cada integrante debe conocer la solución completa, aunque el desarrollo se distribuya.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Registro que debe completarse con el historial Git del grupo.}
+\label{tab:contribuciones}
+\begin{tabularx}{\textwidth}{L{4.3cm}YY}
+\toprule
+\tableheader{Integrante} & \tableheader{Actividad realizada} & \tableheader{Commit o evidencia} \\
+\midrule
+Jose Jimenez Saavedra & \rule{4.0cm}{0.3pt} & \rule{4.0cm}{0.3pt} \\
+\rowcolor{palegray} Franco Oyarzo Calisto & \rule{4.0cm}{0.3pt} & \rule{4.0cm}{0.3pt} \\
+Demian Quezada Pasten & \rule{4.0cm}{0.3pt} & \rule{4.0cm}{0.3pt} \\
+\bottomrule
+\end{tabularx}
+\end{table}
