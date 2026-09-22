@@ -9,6 +9,55 @@ class LexerRegressionCases(unittest.TestCase):
     def setUp(self) -> None:
         self.lexer = Lexer()
 
+    def test_adjacent_operators_keep_longest_match_and_positions(self):
+        result = self.lexer.scan(r"X\==Y=..Z//2**3-->a.")
+        self.assertEqual(result.errors, [])
+        self.assertEqual(
+            [(token.lexeme, token.column) for token in result.tokens],
+            [("X", 1), (r"\==", 2), ("Y", 5), ("=..", 6), ("Z", 9),
+             ("//", 10), ("2", 12), ("**", 13), ("3", 15),
+             ("-->", 16), ("a", 19), (".", 20)],
+        )
+
+    def test_comment_markers_inside_quotes_remain_literal_content(self):
+        result = self.lexer.scan("'% /* */' \"% /* */\" ok")
+        self.assertEqual(result.errors, [])
+        self.assertEqual(
+            [(token.type, token.lexeme) for token in result.tokens],
+            [("ATOMO_CITADO", "'% /* */'"), ("CADENA", '"% /* */"'),
+             ("ATOMO", "ok")],
+        )
+
+    def test_block_comment_stops_at_first_closing_marker(self):
+        result = self.lexer.scan("/* outer /* inner */ok*/fin")
+        self.assertEqual(result.errors, [])
+        self.assertEqual([token.lexeme for token in result.tokens],
+                         ["ok", "*", "/", "fin"])
+
+    def test_empty_quoted_literals_are_valid_and_interned(self):
+        result = self.lexer.scan("'' \"\" '' \"\"")
+        self.assertEqual(result.errors, [])
+        self.assertEqual([token.type for token in result.tokens],
+                         ["ATOMO_CITADO", "CADENA", "ATOMO_CITADO", "CADENA"])
+        self.assertEqual(result.symbols.atoms, {"''": 0})
+        self.assertEqual(result.symbols.literals, {("CADENA", '\"\"'): 0})
+        self.assertEqual([token.attribute for token in result.tokens], [0, 0, 0, 0])
+
+    def test_incomplete_operator_prefixes_report_exact_locations(self):
+        result = self.lexer.scan(": ? \\ ok.")
+        self.assertEqual(
+            [(error.fragment, error.line, error.column) for error in result.errors],
+            [(":", 1, 1), ("?", 1, 3), ("\\", 1, 5)],
+        )
+        self.assertEqual([token.lexeme for token in result.tokens], ["ok", "."])
+
+    def test_lexically_valid_input_does_not_require_valid_syntax(self):
+        result = self.lexer.scan(")][(,;.")
+        self.assertEqual(result.errors, [])
+        self.assertEqual([token.type for token in result.tokens],
+                         ["PARENTESIS_DER", "CORCHETE_DER", "CORCHETE_IZQ",
+                          "PARENTESIS_IZQ", "COMA", "OPERADOR_CONTROL", "PUNTO"])
+
     def test_line_endings_preserve_token_positions(self):
         for newline in ("\n", "\r\n", "\r"):
             with self.subTest(newline=repr(newline)):
