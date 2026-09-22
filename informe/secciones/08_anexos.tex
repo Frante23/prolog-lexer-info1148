@@ -45,11 +45,11 @@ Archivo con errores & \TokensInvalidos{} & \ErroresInvalidos{} & 1 \\
 \end{tabularx}
 \end{table}
 
-El informe se puede compilar con pdfLaTeX o XeLaTeX. El script ejecuta al menos dos pasadas y devuelve un fallo si quedan referencias sin resolver. Usa Latin Modern incluida en la distribución TeX y no requiere fuentes del sistema operativo ni Perl. El resultado queda en \path{informe/build/main.pdf}; \path{informe/main.pdf} conserva la versión revisada para entrega.
+El informe se puede compilar con pdfLaTeX, XeLaTeX o Tectonic. Los dos primeros motores realizan al menos dos pasadas; Tectonic gestiona sus propias repeticiones. Se comprueba que no queden referencias sin resolver. Se utiliza Latin Modern sin depender del registro de fuentes del sistema ni de Perl. La opción \texttt{--publish} valida las pruebas antes de compilar y solo actualiza \path{informe/main.pdf} si ambos pasos terminan correctamente. La copia para la plataforma es \path{informe/Tarea_JefeGrupo_JoseJimenez.pdf}.
 
 \subsection{Registro de contribuciones}
 
-La Tabla~\ref{tab:contribuciones} cita commits existentes del repositorio y su autor registrado. La revisión parte de \texttt{4e40d48} y conserva el historial previo, cuyos commits figuran bajo la identidad \texttt{Frante23}. Las correcciones posteriores usan la identidad ya configurada, \texttt{deimon005}. Estos datos registran autoría Git; no permiten atribuir a otros integrantes actividades que no constan bajo su identidad. Cada integrante debe comprender la solución y registrar sus propias contribuciones, según el enunciado.
+La Tabla~\ref{tab:contribuciones} cita commits existentes del repositorio y su autor registrado. La revisión parte de \texttt{4e40d48} y conserva el historial previo, cuyos commits figuran bajo la identidad \texttt{Frante23}. Las correcciones posteriores usan la identidad ya configurada, \texttt{deimon005}. La revisión de entrega incorpora además contribuciones bajo la identidad \texttt{Pamtom21}, confirmada por Jose Jimenez para este trabajo. Estos datos registran autoría Git; no permiten atribuir a otros integrantes actividades que no constan bajo su identidad. Cada integrante debe comprender la solución y registrar sus propias contribuciones, según el enunciado.
 
 \begin{table}[H]
 \centering
@@ -66,8 +66,12 @@ deimon005 & CLI UTF-8 y validación de archivos completos. & \texttt{1b18f60} \\
 \rowcolor{palegray} deimon005 & Posiciones, recuperación y pruebas de regresión. & \texttt{8bca7de} \\
 deimon005 & Evidencia reproducible para el informe. & \texttt{239d277} \\
 \rowcolor{palegray} deimon005 & Compilación portable con ambos motores. & \texttt{6180328} \\
+\rowcolor{palegray} Pamtom21 & Pruebas de límites, citas y comentarios. & \texttt{0ec4058} \\
+Pamtom21 & Huellas del código y corpus validados. & \texttt{c2e87e9} \\
+\rowcolor{palegray} Pamtom21 & Trazas formales de aceptación y recuperación. & \texttt{cf0d3bc} \\
+Pamtom21 & Compilación portable y publicación tras validación. & \texttt{dd9c508} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-El historial completo se consulta con \texttt{git log --oneline} o desde GitHub Desktop. Para la plataforma de entrega se debe nombrar el PDF \path{Tarea_JefeGrupo_nombreApellido.pdf}, sustituyendo nombre y apellido por los del jefe de grupo designado.
+El historial completo se consulta con \texttt{git log --oneline} o desde GitHub Desktop. El jefe de grupo designado es Jose Jimenez; por ello, la copia para la plataforma se denomina \path{Tarea_JefeGrupo_JoseJimenez.pdf}. El commit que incorpora este PDF se consulta en el historial del archivo; no se incluye su propio hash en el documento para evitar una referencia circular.

@@ -6,6 +6,7 @@ registra lexemas sin repeticiones y detecta errores procurando continuar el aná
 
 Repositorio: <https://github.com/Frante23/prolog-lexer-info1148>.
 Informe técnico: [informe/main.pdf](informe/main.pdf).
+PDF para entregar: [Tarea_JefeGrupo_JoseJimenez.pdf](informe/Tarea_JefeGrupo_JoseJimenez.pdf).
 
 ## Integrantes
 
@@ -99,7 +100,7 @@ La compilación requiere una distribución LaTeX con **pdfLaTeX o XeLaTeX**:
 
 ```bash
 python scripts/validate.py
-python scripts/build_report.py
+python scripts/build_report.py --publish
 ```
 
 El PDF nuevo se genera en `informe/build/main.pdf`. La versión revisada incluida
@@ -115,9 +116,9 @@ python docs/generate_diagrams.py
 El generador actualiza `docs/figures/` y las copias de `informe/figuras/`.
 Matplotlib es una dependencia exclusiva de las ilustraciones.
 
-Para entregar en la plataforma usa el nombre solicitado por el enunciado:
-`Tarea_JefeGrupo_nombreApellido.pdf`, reemplazando nombre y apellido por los del
-jefe de grupo. El historial se consulta con `git log --format="%h | %an | %s"`;
+El jefe de grupo es Jose Jimenez. La copia de entrega incluida se llama
+`informe/Tarea_JefeGrupo_JoseJimenez.pdf`. Después de publicar una revisión,
+actualiza también esa copia desde `informe/main.pdf` y comprueba que sean idénticas. El historial se consulta con `git log --format="%h | %an | %s"`;
 la autoría individual se documenta según los commits existentes.
 
 ## Estructura

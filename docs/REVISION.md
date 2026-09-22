@@ -12,7 +12,7 @@ nueve secciones LaTeX, PDF, instrucciones e historial Git. El alcance es léxico
 | Tipo, lexema, línea y columna | `Token`, CLI textual/JSON y prueba del ejemplo del enunciado. |
 | Tabla de lexemas | `SymbolTable`, índices por tabla, pruebas de repetición y referencias en JSON. |
 | Errores con ubicación y fragmento | `LexError`, pruebas de cierres, caracteres, escapes y números; corpus inválido. |
-| Al menos 20 pruebas válidas y 8 inválidas | 28 válidas y 12 de errores/posición/recuperación originales; 19 regresiones adicionales. |
+| Al menos 20 pruebas válidas y 8 inválidas | 28 válidas y 12 de errores/posición/recuperación originales; 25 regresiones adicionales. |
 | Máxima coincidencia y prioridad | Operadores largos, palabras completas y comentarios antes de división, comprobados en tests. |
 | Dos archivos completos | Los dos `.pl` de `corpus/`, ejecutados en pruebas CLI y validación. |
 | Informe PDF e instrucciones | `informe/main.pdf`, `informe/README.md` y `scripts/build_report.py`. |
@@ -45,10 +45,25 @@ python scripts/build_report.py
 python scripts/build_report.py --engine xelatex --output-dir informe/build/xelatex
 ```
 
-Resultado: 69 pruebas aprobadas; corpus válido con 94 tokens/0 errores e inválido
+Resultado: 75 pruebas aprobadas; corpus válido con 94 tokens/0 errores e inválido
 con 30 tokens/6 errores. Detalle: [validation.json](validation.json).
 
-La portada conserva los integrantes originales. El nombre del jefe de grupo no
-se deduce del orden de los autores: debe usarse el dato real para nombrar el PDF.
+La portada conserva los integrantes originales y registra a Jose Jimenez como
+jefe de grupo, según su confirmación. La copia para entrega se llama
+`informe/Tarea_JefeGrupo_JoseJimenez.pdf`.
 Los commits registran el autor configurado en Git; no acreditan por sí solos
 tareas individuales de integrantes con otra identidad.
+
+## Revisión de entrega
+
+- Se agregaron seis regresiones sobre operadores adyacentes, citas vacías,
+  comentarios dentro de citas, primer cierre de bloque, prefijos incompletos
+  y separación entre análisis léxico y sintáctico.
+- La evidencia identifica mediante SHA-256 los archivos efectivamente probados.
+- El informe explica seis trazas de aceptación contrastadas con el lexer.
+- La publicación ejecuta validación antes de sustituir el PDF; se comprobó que
+  fallos de pruebas o compilación conservan el archivo anterior.
+- El PDF se regenera desde las fuentes actuales, con enlace real al repositorio,
+  cifras actualizadas y commits verificables de Pamtom21 en el anexo.
+- Compartir el enlace con el profesor, subir el archivo a Educa y demostrar
+  comprensión individual son acciones externas que el repositorio no acredita.

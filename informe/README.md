@@ -68,6 +68,10 @@ la primera compilación requiere conexión a Internet. No agrega dependencias al
 lexer ni a sus pruebas. El PDF de plataforma debe copiarse con el nombre
 `Tarea_JefeGrupo_nombreApellido.pdf`, sustituyendo los datos del jefe real.
 
+En este grupo el jefe es Jose Jimenez y la copia incluida es
+`Tarea_JefeGrupo_JoseJimenez.pdf`. Tras `--publish`, actualiza esa copia desde
+`main.pdf` antes de registrar ambos archivos en Git.
+
 ## Overleaf
 
 1. Sube el **contenido** de `informe/`, incluyendo `secciones/`, `figuras/` y
