@@ -1,0 +1,87 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[provide=*,spanish]{babel}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+
+\usepackage[letterpaper,top=1.75cm,bottom=1.75cm,left=1.85cm,right=1.85cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage[table]{xcolor}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amsmath,amssymb}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{caption}
+\usepackage{float}
+
+\definecolor{navy}{HTML}{173B63}
+\definecolor{paleblue}{HTML}{EAF1F8}
+\definecolor{palegray}{HTML}{F4F6F8}
+\definecolor{midgray}{HTML}{D9D9D9}
+\definecolor{textgray}{HTML}{4B5563}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=navy,
+  urlcolor=navy,
+  pdftitle={Informe técnico del analizador léxico para un subconjunto de Prolog},
+  pdfauthor={Jose Jimenez Saavedra, Franco Oyarzo Calisto y Demian Quezada Pasten}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\sffamily\scriptsize\color{textgray} TEORÍA DE LA COMPUTACIÓN $\mid$ INFORME TÉCNICO}
+\fancyfoot[R]{\sffamily\scriptsize\color{textgray} Análisis léxico $\mid$ Página \thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.58em}
+\renewcommand{\arraystretch}{1.23}
+\setcounter{secnumdepth}{2}
+\captionsetup{font=small,labelfont=bf,justification=centering}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\newcommand{\tableheader}[1]{\cellcolor{navy}\color{white}\sffamily\bfseries #1}
+\lstdefinestyle{terminal}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{palegray},
+  frame=single,
+  rulecolor=\color{midgray},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  xleftmargin=0.4em,
+  xrightmargin=0.4em,
+  aboveskip=0.5em,
+  belowskip=0.5em
+}
+
+\begin{document}
+
+\input{secciones/00_portada}
+\input{secciones/01_resumen_introduccion}
+\input{secciones/02_objetivos_alcance}
+\input{secciones/03_especificacion}
+\input{secciones/04_automatas}
+\input{secciones/05_prioridad_implementacion}
+\input{secciones/06_errores_pruebas}
+\input{secciones/07_conclusiones_referencias}
+\input{secciones/08_anexos}
+
+\end{document}
