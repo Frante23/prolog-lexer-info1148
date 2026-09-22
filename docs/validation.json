@@ -1,0 +1,139 @@
+{
+  "date": "2026-09-22",
+  "python": "3.14.4",
+  "command": "python scripts/validate.py",
+  "tests": {
+    "run": 69,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "groups": {
+      "CliTests": 10,
+      "LexerInvalidCases": 12,
+      "LexerRegressionCases": 19,
+      "LexerValidCases": 28
+    },
+    "cases": [
+      "test_cli.CliTests.test_empty_file_has_empty_result",
+      "test_cli.CliTests.test_help_returns_success",
+      "test_cli.CliTests.test_invalid_corpus_recovers_and_reports_positions",
+      "test_cli.CliTests.test_invalid_utf8_has_actionable_error_without_traceback",
+      "test_cli.CliTests.test_missing_file_returns_usage_error",
+      "test_cli.CliTests.test_text_errors_include_location_and_fragment",
+      "test_cli.CliTests.test_text_output_matches_assignment_example",
+      "test_cli.CliTests.test_unicode_output_is_utf8_even_with_legacy_pipe_encoding",
+      "test_cli.CliTests.test_utf8_bom_is_not_a_lexical_error",
+      "test_cli.CliTests.test_valid_corpus_json_and_symbol_references",
+      "test_lexer.LexerInvalidCases.test_29_unclosed_quoted_atom",
+      "test_lexer.LexerInvalidCases.test_30_unclosed_string",
+      "test_lexer.LexerInvalidCases.test_31_unclosed_block_comment",
+      "test_lexer.LexerInvalidCases.test_32_invalid_character",
+      "test_lexer.LexerInvalidCases.test_33_number_letter_suffix",
+      "test_lexer.LexerInvalidCases.test_34_incomplete_exponent",
+      "test_lexer.LexerInvalidCases.test_35_multiple_decimal_points",
+      "test_lexer.LexerInvalidCases.test_36_invalid_escape",
+      "test_lexer.LexerInvalidCases.test_37_recovery_after_invalid_character",
+      "test_lexer.LexerInvalidCases.test_38_error_position",
+      "test_lexer.LexerInvalidCases.test_39_incomplete_signed_exponent_fragment",
+      "test_lexer.LexerInvalidCases.test_40_recovery_after_malformed_number",
+      "test_lexer.LexerValidCases.test_01_unquoted_atom",
+      "test_lexer.LexerValidCases.test_02_atom_with_suffix",
+      "test_lexer.LexerValidCases.test_03_quoted_atom",
+      "test_lexer.LexerValidCases.test_04_quoted_operator_is_atom",
+      "test_lexer.LexerValidCases.test_05_uppercase_variable",
+      "test_lexer.LexerValidCases.test_06_underscore_variable",
+      "test_lexer.LexerValidCases.test_07_anonymous_variable",
+      "test_lexer.LexerValidCases.test_08_integer",
+      "test_lexer.LexerValidCases.test_09_decimal",
+      "test_lexer.LexerValidCases.test_10_exponent",
+      "test_lexer.LexerValidCases.test_11_string",
+      "test_lexer.LexerValidCases.test_12_escaped_string",
+      "test_lexer.LexerValidCases.test_13_clause_operator",
+      "test_lexer.LexerValidCases.test_14_query_operator",
+      "test_lexer.LexerValidCases.test_15_dcg_operator",
+      "test_lexer.LexerValidCases.test_16_comparison_operators",
+      "test_lexer.LexerValidCases.test_17_arithmetic_operators",
+      "test_lexer.LexerValidCases.test_18_control_operators",
+      "test_lexer.LexerValidCases.test_19_delimiters",
+      "test_lexer.LexerValidCases.test_20_line_comment_is_ignored",
+      "test_lexer.LexerValidCases.test_21_block_comment_is_ignored",
+      "test_lexer.LexerValidCases.test_22_longest_comparison",
+      "test_lexer.LexerValidCases.test_23_longest_univ",
+      "test_lexer.LexerValidCases.test_24_keyword_boundary",
+      "test_lexer.LexerValidCases.test_25_sign_is_operator",
+      "test_lexer.LexerValidCases.test_26_clause_dot_after_integer",
+      "test_lexer.LexerValidCases.test_27_symbol_deduplication",
+      "test_lexer.LexerValidCases.test_28_complete_program",
+      "test_lexer_regressions.LexerRegressionCases.test_all_documented_escapes_in_both_literal_types",
+      "test_lexer_regressions.LexerRegressionCases.test_anonymous_occurrences_do_not_share_an_interned_variable",
+      "test_lexer_regressions.LexerRegressionCases.test_block_comment_with_mixed_newlines",
+      "test_lexer_regressions.LexerRegressionCases.test_comment_priority_over_division_operator",
+      "test_lexer_regressions.LexerRegressionCases.test_invalid_escape_discards_literal_and_resumes_at_delimiter",
+      "test_lexer_regressions.LexerRegressionCases.test_line_comments_end_at_every_supported_newline",
+      "test_lexer_regressions.LexerRegressionCases.test_line_endings_preserve_token_positions",
+      "test_lexer_regressions.LexerRegressionCases.test_literal_interning_preserves_type_and_spelling",
+      "test_lexer_regressions.LexerRegressionCases.test_malformed_number_preserves_arithmetic_operator",
+      "test_lexer_regressions.LexerRegressionCases.test_malformed_number_preserves_clause_dot_and_following_atom",
+      "test_lexer_regressions.LexerRegressionCases.test_non_ascii_whitespace_is_reported",
+      "test_lexer_regressions.LexerRegressionCases.test_number_boundaries_use_ascii_classes",
+      "test_lexer_regressions.LexerRegressionCases.test_numeric_dot_is_distinct_from_clause_dot",
+      "test_lexer_regressions.LexerRegressionCases.test_reusing_lexer_does_not_leak_previous_symbols_or_errors",
+      "test_lexer_regressions.LexerRegressionCases.test_tabs_and_other_ascii_separators_count_one_column",
+      "test_lexer_regressions.LexerRegressionCases.test_unclosed_block_comment_consumes_remainder_with_exact_location",
+      "test_lexer_regressions.LexerRegressionCases.test_unclosed_literal_at_eof_includes_trailing_backslash",
+      "test_lexer_regressions.LexerRegressionCases.test_unclosed_literals_preserve_fragment_and_resume_on_next_line",
+      "test_lexer_regressions.LexerRegressionCases.test_unicode_is_allowed_in_quoted_literals"
+    ]
+  },
+  "corpus": {
+    "programa_valido.pl": {
+      "tokens": 94,
+      "errors": 0,
+      "exit_code": 0,
+      "diagnostics": []
+    },
+    "programa_con_errores.pl": {
+      "tokens": 30,
+      "errors": 6,
+      "exit_code": 1,
+      "diagnostics": [
+        {
+          "mensaje": "Numero mal formado",
+          "fragmento": "12abc",
+          "linea": 3,
+          "columna": 6
+        },
+        {
+          "mensaje": "Caracter no admitido",
+          "fragmento": "@",
+          "linea": 4,
+          "columna": 9
+        },
+        {
+          "mensaje": "Cadena sin cierre",
+          "fragmento": "\"cadena sin cierre",
+          "linea": 5,
+          "columna": 7
+        },
+        {
+          "mensaje": "Numero mal formado",
+          "fragmento": "3.14.15",
+          "linea": 7,
+          "columna": 9
+        },
+        {
+          "mensaje": "Secuencia de escape no admitida: \\q",
+          "fragmento": "\"mal\\q\"",
+          "linea": 8,
+          "columna": 8
+        },
+        {
+          "mensaje": "Comentario de bloque sin cierre",
+          "fragmento": "/* comentario sin cierre\r\n",
+          "linea": 9,
+          "columna": 1
+        }
+      ]
+    }
+  }
+}
