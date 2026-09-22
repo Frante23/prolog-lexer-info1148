@@ -1,0 +1,87 @@
+\section{Diseño de los autómatas}
+
+Los autómatas de las Figuras~\ref{fig:identificadores}, \ref{fig:numeros} y \ref{fig:operadores} representan las categorías con mayor posibilidad de superposición. Los estados con doble circunferencia son aceptadores. Si un estado aceptador mantiene transiciones de salida, el analizador guarda esa aceptación y continúa leyendo; cuando ya no existe una transición válida, retorna el último estado aceptador alcanzado. Ese procedimiento implementa la máxima coincidencia sin confundirla con la prioridad entre categorías.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{figuras/afd_identificadores.png}
+  \caption{AFD para átomos no citados, variables y variable anónima.}
+  \label{fig:identificadores}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{figuras/afd_numeros.png}
+  \caption{AFD para enteros y reales sin signo léxico.}
+  \label{fig:numeros}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{figuras/afd_operadores.png}
+  \caption{Fragmento del trie de operadores con prefijos compartidos.}
+  \label{fig:operadores}
+\end{figure}
+
+\subsection{Determinización representativa}
+
+Para mostrar la construcción de subconjuntos se utiliza el lenguaje de átomos no citados. Se parte de un AFN deliberadamente no mínimo que divide la primera letra en dos ramas equivalentes. El estado $q_0$ posee transiciones $\varepsilon$ hacia $p_0$ y $r_0$; desde $p_0$, una letra de $[a\text{-}m]$ lleva a $p_1$, mientras que desde $r_0$ una letra de $[n\text{-}z]$ lleva a $r_1$. Los estados $p_1$ y $r_1$ aceptan ATOMO y repiten con cualquier carácter de $C$. La transformación aplica la construcción de subconjuntos y luego refina particiones para obtener estados equivalentes \cite{hopcroft}.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Transiciones del AFN representativo.}
+\label{tab:afn}
+\begin{tabularx}{0.92\textwidth}{C{1.7cm}C{2.1cm}C{2.1cm}C{2.1cm}Y}
+\toprule
+\tableheader{Estado} & \tableheader{$\varepsilon$} & \tableheader{$[a$--$m]$} & \tableheader{$[n$--$z]$} & \tableheader{$U\cup D\cup\{\_\}$} \\
+\midrule
+$q_0$ & $\{p_0,r_0\}$ & $\varnothing$ & $\varnothing$ & $\varnothing$ \\
+\rowcolor{palegray} $p_0$ & $\varnothing$ & $\{p_1\}$ & $\varnothing$ & $\varnothing$ \\
+$r_0$ & $\varnothing$ & $\varnothing$ & $\{r_1\}$ & $\varnothing$ \\
+\rowcolor{palegray} $p_1$ & $\varnothing$ & $\{p_1\}$ & $\{p_1\}$ & $\{p_1\}$ \\
+$r_1$ & $\varnothing$ & $\{r_1\}$ & $\{r_1\}$ & $\{r_1\}$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La clausura-$\varepsilon$ inicial es $D_0=\{q_0,p_0,r_0\}$. Al mover ese conjunto con $[a\text{-}m]$ se obtiene $D_1=\{p_1\}$; con $[n\text{-}z]$ se obtiene $D_2=\{r_1\}$. Cualquier clase sin transición conduce a $D_{\bot}=\varnothing$. Como $p_1$ y $r_1$ repiten con $C$, los subconjuntos alcanzados se mantienen estables después del primer carácter.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tabla de transición obtenida mediante construcción de subconjuntos.}
+\label{tab:determinizado}
+\begin{tabularx}{\textwidth}{L{3.4cm}C{1.9cm}C{1.9cm}C{3.3cm}Y}
+\toprule
+\tableheader{Estado AFD} & \tableheader{$[a$--$m]$} & \tableheader{$[n$--$z]$} & \tableheader{$U\cup D\cup\{\_\}$} & \tableheader{Aceptación} \\
+\midrule
+$D_0=\{q_0,p_0,r_0\}$ & $D_1$ & $D_2$ & $D_{\bot}$ & No \\
+\rowcolor{palegray} $D_1=\{p_1\}$ & $D_1$ & $D_1$ & $D_1$ & ATOMO \\
+$D_2=\{r_1\}$ & $D_2$ & $D_2$ & $D_2$ & ATOMO \\
+\rowcolor{palegray} $D_{\bot}=\varnothing$ & $D_{\bot}$ & $D_{\bot}$ & $D_{\bot}$ & No \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Minimización}
+
+La partición inicial es $P_0=\{\{D_1,D_2\},\{D_0,D_{\bot}\}\}$: el primer bloque contiene los estados que aceptan ATOMO y el segundo, los que no aceptan. El bloque no aceptador se divide porque desde $D_0$ una letra minúscula alcanza aceptación, mientras que desde $D_{\bot}$ toda entrada permanece en el estado muerto. En cambio, $D_1$ y $D_2$ no se separan: ambos producen el mismo token y, para cada clase de entrada de $C$, permanecen dentro del bloque aceptador. La partición estable es $P_1=\{\{D_1,D_2\},\{D_0\},\{D_{\bot}\}\}$, por lo que $D_1$ y $D_2$ se fusionan en $D_A$.
+
+\begin{table}[H]
+\centering
+\small
+\caption{AFD mínimo para el ejemplo representativo.}
+\label{tab:minimo}
+\begin{tabularx}{\textwidth}{L{3.4cm}C{1.9cm}C{1.9cm}C{3.3cm}Y}
+\toprule
+\tableheader{Estado mínimo} & \tableheader{$[a$--$m]$} & \tableheader{$[n$--$z]$} & \tableheader{$U\cup D\cup\{\_\}$} & \tableheader{Aceptación} \\
+\midrule
+$D_0$ & $D_A$ & $D_A$ & $D_{\bot}$ & No \\
+\rowcolor{palegray} $D_A=D_1\cup D_2$ & $D_A$ & $D_A$ & $D_A$ & ATOMO \\
+$D_{\bot}$ & $D_{\bot}$ & $D_{\bot}$ & $D_{\bot}$ & No \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El programa no materializa un AFD único en memoria. Utiliza una estrategia equivalente: un despachador selecciona el autómata de la categoría posible a partir del carácter inicial, las expresiones regulares representan los AFD de identificadores y números, y una lista ordenada codifica las hojas del trie de operadores. Los literales citados y comentarios se recorren con estados explícitos de cierre y escape. Todos los reconocedores entregan un lexema aceptado o un diagnóstico, y el ciclo principal conserva una única posición de lectura. Así se mantiene la relación entre el modelo formal y el recorrido implementado sin generar una tabla global de transición.
