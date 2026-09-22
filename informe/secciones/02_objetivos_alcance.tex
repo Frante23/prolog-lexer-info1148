@@ -1,0 +1,34 @@
+\section{Objetivos}
+
+\subsection{Objetivo general}
+
+Desarrollar y validar un analizador léxico para un subconjunto definido de Prolog, relacionando expresiones regulares y autómatas finitos con una implementación en Python capaz de generar tokens posicionados y diagnósticos recuperables.
+
+\subsection{Objetivos específicos}
+
+Los objetivos específicos consisten en definir las categorías admitidas mediante patrones, ejemplos, atributos y reglas de prioridad; modelar categorías representativas con autómatas finitos y documentar una conversión de AFN a AFD junto con su minimización; implementar el recorrido de la fuente, la tabla de lexemas y los diagnósticos de error; y comprobar el comportamiento del analizador mediante pruebas automatizadas y dos archivos completos de entrada.
+
+\section{Alcance del analizador}
+
+La especificación restringe los identificadores y dígitos a caracteres ASCII. Esta decisión mantiene explícitas las clases de transición del autómata y acota la implementación al subconjunto pedido, aunque SWI-Prolog admite identificadores Unicode más amplios \cite{swisyntax}. Los literales citados sí pueden contener otros caracteres, siempre que no introduzcan un salto de línea ni una secuencia de escape fuera de la convención adoptada.
+
+El analizador produce tokens y errores léxicos, pero no determina si esos tokens forman una cláusula correcta. Tampoco interpreta precedencias, realiza unificación, administra ámbitos ni asigna significado a los literales. La Tabla~\ref{tab:alcance} resume esa frontera para evitar que los resultados se presenten como una implementación completa de Prolog.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Decisiones de alcance del analizador.}
+\label{tab:alcance}
+\begin{tabularx}{\textwidth}{L{2.85cm}YY}
+\toprule
+\tableheader{Aspecto} & \tableheader{Incluido} & \tableheader{Excluido} \\
+\midrule
+Identificadores & Átomos iniciados en minúscula; variables iniciadas en mayúscula o guion bajo; \texttt{\_} como anónima. & Unicode fuera de literales citados. \\
+\rowcolor{palegray} Números & Enteros, decimales con dígitos a ambos lados del punto y exponentes opcionales. & Bases no decimales, racionales, infinidades y NaN. \\
+Texto & Átomos con comillas simples y cadenas dobles; escapes \texttt{\textbackslash n}, \texttt{\textbackslash t}, \texttt{\textbackslash r}, \texttt{\textbackslash\textbackslash}, \texttt{\textbackslash'} y \texttt{\textbackslash"}. & Saltos de línea sin escapar y otros escapes. \\
+\rowcolor{palegray} Operadores & Cláusulas, consultas, unificación, comparación, aritmética y control señalados en la tarea. & Operadores definidos por el usuario. \\
+Comentarios & \texttt{\%} hasta fin de línea y \texttt{/* ... */}. & Comentarios de bloque anidados. \\
+\rowcolor{palegray} Procesamiento & Tokenización, posiciones, tabla de lexemas y recuperación léxica. & Sintaxis, precedencia, unificación, ámbitos y semántica. \\
+\bottomrule
+\end{tabularx}
+\end{table}

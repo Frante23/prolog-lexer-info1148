@@ -1,0 +1,59 @@
+\section{Especificación léxica}
+
+Se define $L=[a\text{-}z]$, $U=[A\text{-}Z]$, $D=[0\text{-}9]$ y $C=[A\text{-}Za\text{-}z0\text{-}9\_]$. Las expresiones de la Tabla~\ref{tab:formal} usan una notación compatible con \texttt{re} de Python. En la implementación, los patrones compilados se aplican desde la posición actual mediante \texttt{match}; los literales citados y los comentarios de bloque se recorren carácter por carácter para conservar el fragmento exacto cuando falta un cierre. Esta estrategia reconoce el mismo lenguaje definido por las expresiones, pero permite diagnósticos más precisos \cite{pythonre}.
+
+\small
+\begin{longtable}{L{3.1cm}L{4.7cm}L{7.1cm}}
+\caption{Definición formal del subconjunto.}\label{tab:formal}\\
+\toprule
+\tableheader{Token} & \tableheader{Descripción} & \tableheader{Expresión regular conceptual} \\
+\midrule
+\endfirsthead
+\toprule
+\tableheader{Token} & \tableheader{Descripción} & \tableheader{Expresión regular conceptual} \\
+\midrule
+\endhead
+ATOMO & Identificador iniciado en minúscula. & \path{[a-z][A-Za-z0-9_]*} \\
+\rowcolor{palegray} \makecell[l]{ATOMO\_\\CITADO} & Texto entre comillas simples con escapes admitidos. & \path{'(?:\\[ntr\\'\"]|[^'\\\n])*'} \\
+VARIABLE & Identificador iniciado en mayúscula o guion bajo, excepto el lexema aislado \texttt{\_}. & \path{[A-Z_][A-Za-z0-9_]*} \\
+\rowcolor{palegray} \makecell[l]{VARIABLE\_\\ANONIMA} & Guion bajo aislado. & \path{_} \\
+ENTERO & Secuencia decimal sin signo. & \path{[0-9]+} \\
+\rowcolor{palegray} REAL & Decimal o exponente; el signo solo se admite en el exponente. & \path{(?:[0-9]+\.[0-9]+(?:[eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+)} \\
+CADENA & Texto entre comillas dobles con escapes admitidos. & \path{\"(?:\\[ntr\\'\"]|[^\"\\\n])*\"} \\
+\rowcolor{palegray} \makecell[l]{OPERADOR\_\\CLAUSULA} & Operadores de regla y gramática de cláusulas definidas. & \path{-->|:-} \\
+\makecell[l]{OPERADOR\_\\CONSULTA} & Inicio de consulta. & \path{\?-} \\
+\rowcolor{palegray} \makecell[l]{OPERADOR\_\\COMPARACION} & Unificación, identidad, desigualdad y comparación. & \path{\\==|=\.\.|\\=|==|=<|>=|=|<|>} \\
+\makecell[l]{OPERADOR\_\\ARITMETICO} & Operadores simbólicos y alfabéticos admitidos. & \path{//|\*\*|[+\-*/]|is|mod} \\
+\rowcolor{palegray} \makecell[l]{OPERADOR\_\\CONTROL} & Negación, corte y disyunción. & \path{\\\+|!|;} \\
+DELIMITADOR & Agrupación, lista, separación y cierre de cláusula. & \path{[()\[\]{}|,.]} \\
+\rowcolor{palegray} COMENTARIO & Línea o bloque descartado por el analizador. & \path{%[^\n]*|/\*(?s:.*?)\*/} \\
+ESPACIO & Separadores descartados con actualización de posición. & \path{[ \t\r\n\f\v]+} \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+Los operadores se limitan a los lexemas exigidos por la tarea. Prolog permite declarar operadores y asociarles precedencia y tipo, pero esa información pertenece al análisis sintáctico y queda fuera de este lexer \cite{swioperators}. En consecuencia, \texttt{is} y \texttt{mod} se tratan como operadores alfabéticos reservados dentro del subconjunto, mientras que cualquier identificador más largo se conserva como átomo.
+
+\small
+\begin{longtable}{L{3.1cm}L{3.3cm}L{4.3cm}L{3.5cm}}
+\caption{Ejemplos y atributos asociados.}\label{tab:ejemplos}\\
+\toprule
+\tableheader{Token} & \tableheader{Ejemplos válidos} & \tableheader{Ejemplos inválidos} & \tableheader{Atributo} \\
+\midrule
+\endfirsthead
+\toprule
+\tableheader{Token} & \tableheader{Ejemplos válidos} & \tableheader{Ejemplos inválidos} & \tableheader{Atributo} \\
+\midrule
+\endhead
+ATOMO & \texttt{padre}, \texttt{persona\_1} & \texttt{Padre}, \texttt{1persona} & Índice en átomos \\
+\rowcolor{palegray} \makecell[l]{ATOMO\_\\CITADO} & \texttt{'Juan Perez'}, \texttt{':-'} & \texttt{'sin cierre} & Índice en átomos \\
+VARIABLE & \texttt{X}, \texttt{Persona}, \texttt{\_Tmp} & \texttt{x}, \texttt{2X} & Índice en variables \\
+\rowcolor{palegray} \makecell[l]{VARIABLE\_\\ANONIMA} & \texttt{\_} & \texttt{\_\_} como anónima & Sin índice \\
+ENTERO & \texttt{25}, \texttt{0} & \texttt{12abc}, \texttt{2e} & Índice en literales \\
+\rowcolor{palegray} REAL & \texttt{3.14}, \texttt{2e-3} & \texttt{3.14.15}, \texttt{1e+} & Índice en literales \\
+CADENA & \texttt{"hola"}, \verb|"a\n b"| & \texttt{"sin cierre}, \verb|"x\q"| & Índice en literales \\
+\rowcolor{palegray} OPERADOR & \verb|\==|, \texttt{=..}, \texttt{:-}, \texttt{is} & \texttt{:}, \texttt{@} & Sin índice \\
+DELIMITADOR & \texttt{( ) [ ] \{ \} $|$ , .} & \texttt{@}, \texttt{\#} & Sin índice \\
+\bottomrule
+\end{longtable}
+\normalsize
