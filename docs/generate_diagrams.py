@@ -1,13 +1,28 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, FancyArrowPatch
 
 
-OUT = Path(__file__).resolve().parent / "figures"
-OUT.mkdir(parents=True, exist_ok=True)
+ROOT = Path(__file__).resolve().parents[1]
+OUTPUTS = (ROOT / "docs" / "figures", ROOT / "informe" / "figuras")
+
+
+def save(fig, filename):
+    """Genera una imagen y sincroniza la copia utilizada por el informe."""
+    for directory in OUTPUTS:
+        directory.mkdir(parents=True, exist_ok=True)
+    destination = OUTPUTS[0] / filename
+    fig.savefig(destination, bbox_inches="tight", facecolor="white")
+    for directory in OUTPUTS[1:]:
+        shutil.copyfile(destination, directory / filename)
+    plt.close(fig)
 
 
 def arrow(ax, start, end, label, bend=0.0, offset=(0, 0), size=11):
@@ -67,7 +82,7 @@ def identifiers():
     fig, ax = setup(10, 4.4)
     q0, qa, qv, qu = (1.4, 2.1), (4.7, 3.2), (7.7, 1.3), (4.5, 0.65)
     state(ax, q0, "q0")
-    state(ax, qa, "qA", True, "ATOMO")
+    state(ax, qa, "qA", True, "ATOMO (*)")
     state(ax, qv, "qV", True, "VARIABLE")
     state(ax, qu, "q_", True, "ANONIMA")
     arrow(ax, (0.25, 2.1), q0, "inicio", offset=(0, 0.22))
@@ -79,10 +94,11 @@ def identifiers():
     arrow(ax, qu, qv, "[A-Za-z0-9_]", bend=-0.08, offset=(0, 0.22), size=9)
     ax.set_xlim(-0.1, 9.2)
     ax.set_ylim(0.0, 4.2)
-    ax.set_title("AFD para atomos no citados y variables", fontsize=14, fontweight="bold", color="#173B63")
+    ax.set_title("AFD para identificadores", fontsize=14, fontweight="bold", color="#173B63")
+    fig.text(0.5, 0.01, "(*) is y mod se reclasifican como OPERADOR_ARITMETICO.",
+             ha="center", fontsize=9, color="#25364A")
     fig.tight_layout()
-    fig.savefig(OUT / "afd_identificadores.png", bbox_inches="tight", facecolor="white")
-    plt.close(fig)
+    save(fig, "afd_identificadores.png")
 
 
 def numbers():
@@ -107,15 +123,14 @@ def numbers():
     arrow(ax, pts["qI"], pts["qE"], "e | E", bend=0.08, offset=(0, -0.18))
     arrow(ax, pts["qR"], pts["qE"], "e | E", bend=0.12, offset=(-0.1, -0.12))
     arrow(ax, pts["qE"], pts["qS"], "+ | -", offset=(0, 0.22))
-    arrow(ax, pts["qE"], pts["qX"], "[0-9]", bend=-0.18, offset=(0.0, 0.48))
+    arrow(ax, pts["qE"], pts["qX"], "[0-9]", bend=-0.32, offset=(0.0, 0.92))
     arrow(ax, pts["qS"], pts["qX"], "[0-9]", offset=(0, 0.22))
     loop(ax, pts["qX"], "[0-9]", above=False)
     ax.set_xlim(-0.4, 11.0)
     ax.set_ylim(0.0, 4.8)
     ax.set_title("AFD para enteros y reales sin signo", fontsize=14, fontweight="bold", color="#173B63")
     fig.tight_layout()
-    fig.savefig(OUT / "afd_numeros.png", bbox_inches="tight", facecolor="white")
-    plt.close(fig)
+    save(fig, "afd_numeros.png")
 
 
 def operators():
@@ -142,10 +157,9 @@ def operators():
     arrow(ax, qbeq, qbee, "=", offset=(0, 0.23))
     ax.set_xlim(-0.4, 10.3)
     ax.set_ylim(0.0, 5.35)
-    ax.set_title("Trie de operadores y maxima coincidencia", fontsize=14, fontweight="bold", color="#173B63")
+    ax.set_title("Trie de operadores y máxima coincidencia", fontsize=14, fontweight="bold", color="#173B63")
     fig.tight_layout()
-    fig.savefig(OUT / "afd_operadores.png", bbox_inches="tight", facecolor="white")
-    plt.close(fig)
+    save(fig, "afd_operadores.png")
 
 
 if __name__ == "__main__":

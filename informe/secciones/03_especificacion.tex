@@ -1,6 +1,8 @@
 \section{Especificación léxica}
 
-Se define $L=[a\text{-}z]$, $U=[A\text{-}Z]$, $D=[0\text{-}9]$ y $C=[A\text{-}Za\text{-}z0\text{-}9\_]$. Las expresiones de la Tabla~\ref{tab:formal} usan una notación compatible con \texttt{re} de Python. En la implementación, los patrones compilados se aplican desde la posición actual mediante \texttt{match}; los literales citados y los comentarios de bloque se recorren carácter por carácter para conservar el fragmento exacto cuando falta un cierre. Esta estrategia reconoce el mismo lenguaje definido por las expresiones, pero permite diagnósticos más precisos \cite{pythonre}.
+Se define $L=[a\text{-}z]$, $U=[A\text{-}Z]$, $D=[0\text{-}9]$ y $C=L\cup U\cup D\cup\{\_\}$. El alfabeto de entrada $\Sigma$ contiene los caracteres Unicode de la fuente, pero los identificadores, dígitos y espacios admitidos se restringen a las clases ASCII indicadas. Los caracteres Unicode adicionales pueden aparecer dentro de citas y comentarios. LF, CRLF y CR se cuentan como un único salto de línea; una tabulación ocupa una columna. Las posiciones comienzan en uno y cuentan caracteres, no bytes ni anchura visual.
+
+Las expresiones de la Tabla~\ref{tab:formal} usan la notación de \texttt{re} de Python: $|$ denota alternativas, los corchetes definen clases y los grupos \texttt{(?:...)} no capturan. Los patrones se aplican desde la posición actual mediante \texttt{match}; no se busca una coincidencia posterior que omita caracteres. En Python las alternativas se intentan de izquierda a derecha, de modo que el orden de operadores largos antes de sus prefijos forma parte de la implementación de máxima coincidencia \cite{pythonre}. Las citas y los comentarios de bloque se recorren explícitamente para conservar el fragmento de los errores de cierre.
 
 \small
 \begin{longtable}{L{3.1cm}L{4.7cm}L{7.1cm}}
@@ -13,26 +15,51 @@ Se define $L=[a\text{-}z]$, $U=[A\text{-}Z]$, $D=[0\text{-}9]$ y $C=[A\text{-}Za
 \tableheader{Token} & \tableheader{Descripción} & \tableheader{Expresión regular conceptual} \\
 \midrule
 \endhead
-ATOMO & Identificador iniciado en minúscula. & \path{[a-z][A-Za-z0-9_]*} \\
-\rowcolor{palegray} \makecell[l]{ATOMO\_\\CITADO} & Texto entre comillas simples con escapes admitidos. & \path{'(?:\\[ntr\\'\"]|[^'\\\n])*'} \\
-VARIABLE & Identificador iniciado en mayúscula o guion bajo, excepto el lexema aislado \texttt{\_}. & \path{[A-Z_][A-Za-z0-9_]*} \\
+ATOMO & Identificador iniciado en minúscula; se reclasifican \texttt{is} y \texttt{mod}. & \path{[a-z][A-Za-z0-9_]*} \\
+\rowcolor{palegray} \makecell[l]{ATOMO\_\\CITADO} & Texto entre comillas simples con escapes admitidos. & \path{'(?:\\[ntr\\'"]|[^'\\\r\n])*'} \\
+VARIABLE & Identificador iniciado en mayúscula o guion bajo, excepto el lexema aislado \texttt{\_}. & \path{(?:[A-Z][A-Za-z0-9_]*|_[A-Za-z0-9_]+)} \\
 \rowcolor{palegray} \makecell[l]{VARIABLE\_\\ANONIMA} & Guion bajo aislado. & \path{_} \\
 ENTERO & Secuencia decimal sin signo. & \path{[0-9]+} \\
 \rowcolor{palegray} REAL & Decimal o exponente; el signo solo se admite en el exponente. & \path{(?:[0-9]+\.[0-9]+(?:[eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+)} \\
-CADENA & Texto entre comillas dobles con escapes admitidos. & \path{\"(?:\\[ntr\\'\"]|[^\"\\\n])*\"} \\
+CADENA & Texto entre comillas dobles con escapes admitidos. & \path{"(?:\\[ntr\\'"]|[^"\\\r\n])*"} \\
 \rowcolor{palegray} \makecell[l]{OPERADOR\_\\CLAUSULA} & Operadores de regla y gramática de cláusulas definidas. & \path{-->|:-} \\
 \makecell[l]{OPERADOR\_\\CONSULTA} & Inicio de consulta. & \path{\?-} \\
 \rowcolor{palegray} \makecell[l]{OPERADOR\_\\COMPARACION} & Unificación, identidad, desigualdad y comparación. & \path{\\==|=\.\.|\\=|==|=<|>=|=|<|>} \\
 \makecell[l]{OPERADOR\_\\ARITMETICO} & Operadores simbólicos y alfabéticos admitidos. & \path{//|\*\*|[+\-*/]|is|mod} \\
 \rowcolor{palegray} \makecell[l]{OPERADOR\_\\CONTROL} & Negación, corte y disyunción. & \path{\\\+|!|;} \\
-DELIMITADOR & Agrupación, lista, separación y cierre de cláusula. & \path{[()\[\]{}|,.]} \\
-\rowcolor{palegray} COMENTARIO & Línea o bloque descartado por el analizador. & \path{%[^\n]*|/\*(?s:.*?)\*/} \\
-ESPACIO & Separadores descartados con actualización de posición. & \path{[ \t\r\n\f\v]+} \\
+DELIMITADORES & Familia de tokens detallada en la Tabla~\ref{tab:delimitadores}. & \path{[()\[\]{}|,.]} \\
+\rowcolor{palegray} COMENTARIO de línea & Desde \texttt{\%} hasta antes de CR, LF o fin de archivo; se descarta. & \path{%[^\r\n]*} \\
+COMENTARIO de bloque & Hasta el primer cierre; sin anidamiento; se descarta. & \path{/\*[^*]*\*+(?:[^/*][^*]*\*+)*/} \\
+\rowcolor{palegray} ESPACIO & Separadores descartados con actualización de posición. & \path{[ \t\r\n\f\v]+} \\
 \bottomrule
 \end{longtable}
 \normalsize
 
-Los operadores se limitan a los lexemas exigidos por la tarea. Prolog permite declarar operadores y asociarles precedencia y tipo, pero esa información pertenece al análisis sintáctico y queda fuera de este lexer \cite{swioperators}. En consecuencia, \texttt{is} y \texttt{mod} se tratan como operadores alfabéticos reservados dentro del subconjunto, mientras que cualquier identificador más largo se conserva como átomo.
+Los operadores cubren los lexemas obligatorios de la tarea y la extensión opcional \texttt{-->}. Prolog permite declarar operadores y asociarles precedencia y tipo, pero esa información pertenece al análisis sintáctico y queda fuera de este lexer \cite{swioperators}. Se reconoce primero el identificador completo: solo los lexemas exactos \texttt{is} y \texttt{mod} se reclasifican como operadores; \texttt{island}, \texttt{modulo} e \texttt{is2} son átomos. Entre números válidos, REAL tiene prioridad sobre ENTERO. El signo inicial siempre es un operador: \texttt{-25} produce dos tokens, mientras que \texttt{2e-3} produce un REAL.
+
+Ambas clases de citas permiten contenido vacío y los escapes \verb|\n|, \verb|\t|, \verb|\r|, \verb|\\|, \verb|\'| y \verb|\"|. Se conserva el lexema exacto, incluidas comillas y barras, sin evaluar los escapes. Un CR o LF literal interrumpe una cita sin cierre. Los comentarios no se reconocen dentro de citas; las comillas no tienen significado especial dentro de comentarios. La expresión de bloque impide consumir un cierre intermedio, por lo que \texttt{/* a */ b /* c */} contiene dos comentarios separados por el átomo \texttt{b}.
+
+La aceptación numérica incorpora una regla de frontera: una letra ASCII, guion bajo o un segundo punto seguido de dígito ASCII inmediatamente después del número origina un diagnóstico de número mal formado. Así, \texttt{12abc} y \texttt{3.14.15} no se fragmentan en tokens válidos. Un punto sin dígito posterior queda disponible como PUNTO: \texttt{12.} produce ENTERO y PUNTO. Esta comprobación y la recuperación de errores complementan los patrones de números válidos; no analizan la gramática de cláusulas.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Nombres concretos de los tokens delimitadores. Cada patrón es un carácter literal.}
+\label{tab:delimitadores}
+\begin{tabularx}{\textwidth}{Y C{1.3cm} Y C{1.3cm}}
+\toprule
+\tableheader{Token} & \tableheader{Lexema} & \tableheader{Token} & \tableheader{Lexema} \\
+\midrule
+PARENTESIS\_IZQ & \texttt{(} & PARENTESIS\_DER & \texttt{)} \\
+\rowcolor{palegray} CORCHETE\_IZQ & \texttt{[} & CORCHETE\_DER & \texttt{]} \\
+LLAVE\_IZQ & \texttt{\{} & LLAVE\_DER & \texttt{\}} \\
+\rowcolor{palegray} BARRA\_VERTICAL & \texttt{|} & COMA & \texttt{,} \\
+PUNTO & \texttt{.} & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Los ejemplos inválidos de la Tabla~\ref{tab:ejemplos} no pertenecen a la categoría de su fila; algunos sí son válidos como otra categoría. Por ejemplo, \texttt{Padre} es una variable y \texttt{\_\_} también. Los comentarios y espacios no emiten tokens ni atributos; los índices de átomos, variables y literales comienzan en cero dentro de sus respectivas tablas.
 
 \small
 \begin{longtable}{L{3.1cm}L{3.3cm}L{4.3cm}L{3.5cm}}
@@ -46,14 +73,20 @@ Los operadores se limitan a los lexemas exigidos por la tarea. Prolog permite de
 \midrule
 \endhead
 ATOMO & \texttt{padre}, \texttt{persona\_1} & \texttt{Padre}, \texttt{1persona} & Índice en átomos \\
-\rowcolor{palegray} \makecell[l]{ATOMO\_\\CITADO} & \texttt{'Juan Perez'}, \texttt{':-'} & \texttt{'sin cierre} & Índice en átomos \\
+\rowcolor{palegray} \makecell[l]{ATOMO\_\\CITADO} & \texttt{'Juan Pérez'}, \texttt{':-'} & \texttt{'sin cierre} & Índice en átomos \\
 VARIABLE & \texttt{X}, \texttt{Persona}, \texttt{\_Tmp} & \texttt{x}, \texttt{2X} & Índice en variables \\
 \rowcolor{palegray} \makecell[l]{VARIABLE\_\\ANONIMA} & \texttt{\_} & \texttt{\_\_} como anónima & Sin índice \\
 ENTERO & \texttt{25}, \texttt{0} & \texttt{12abc}, \texttt{2e} & Índice en literales \\
 \rowcolor{palegray} REAL & \texttt{3.14}, \texttt{2e-3} & \texttt{3.14.15}, \texttt{1e+} & Índice en literales \\
 CADENA & \texttt{"hola"}, \verb|"a\n b"| & \texttt{"sin cierre}, \verb|"x\q"| & Índice en literales \\
-\rowcolor{palegray} OPERADOR & \verb|\==|, \texttt{=..}, \texttt{:-}, \texttt{is} & \texttt{:}, \texttt{@} & Sin índice \\
-DELIMITADOR & \texttt{( ) [ ] \{ \} $|$ , .} & \texttt{@}, \texttt{\#} & Sin índice \\
+\rowcolor{palegray} \makecell[l]{OPERADOR\_\\CLAUSULA} & \texttt{:-}, \texttt{-->} & \texttt{:}, \texttt{?-} & Sin índice \\
+\makecell[l]{OPERADOR\_\\CONSULTA} & \texttt{?-} & \texttt{?}, \texttt{:-} & Sin índice \\
+\rowcolor{palegray} \makecell[l]{OPERADOR\_\\COMPARACION} & \verb|\==|, \texttt{=..}, \texttt{=<} & \texttt{is}, \texttt{@} & Sin índice \\
+\makecell[l]{OPERADOR\_\\ARITMETICO} & \texttt{//}, \texttt{**}, \texttt{is} & \texttt{island}, \texttt{=} & Sin índice \\
+\rowcolor{palegray} \makecell[l]{OPERADOR\_\\CONTROL} & \verb|\+|, \texttt{!}, \texttt{;} & \texttt{+}, \texttt{?} & Sin índice \\
+DELIMITADORES & \texttt{( ) [ ] \{ \} | , .} & \texttt{@}, \texttt{\#} & Sin índice \\
+\rowcolor{palegray} COMENTARIO & \texttt{\% nota}, \texttt{/* nota */} & \texttt{/* sin cierre} & Se descarta \\
+ESPACIO & Espacio, TAB, CR, LF, FF, VT & Espacio Unicode U+00A0 & Se descarta \\
 \bottomrule
 \end{longtable}
 \normalsize
